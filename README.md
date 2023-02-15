@@ -31,8 +31,8 @@ Software to extract irradiance and atmospheric optical properties from PV power 
 
 ## pvcal_invert2rad
 - Main part of the software
--- Calibrate PV systems
--- Invert PV power onto tilted irradiance, optical depth and horizontal irradiance
+- Calibrate PV systems
+- Invert PV power onto tilted irradiance, optical depth and horizontal irradiance
 
 ## pvdataprocess
 - Data process functions to pre-process raw data from measurement campaigns
