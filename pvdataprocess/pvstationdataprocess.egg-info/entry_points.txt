@@ -1,0 +1,3 @@
+[console_scripts]
+pvdataprocess = pvdataprocess.pvstation_data_process:main
+

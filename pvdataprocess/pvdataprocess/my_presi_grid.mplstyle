@@ -1,0 +1,10 @@
+font.size : 18
+legend.fontsize : 18
+axes.grid : True
+axes.titlesize : 22
+axes.labelsize : 20
+xtick.labelsize : 16
+ytick.labelsize : 16
+
+figure.figsize : 10, 8.5
+

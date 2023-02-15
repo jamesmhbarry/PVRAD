@@ -1,0 +1,7 @@
+#Config file for PV data preprocessing
+
+#Path for AUEW Excel sheet
+auew_data: /mnt/bigdata/00_Projects/1_MetPVNet/Messkampagne/00_Messdaten/02_Messdaten_2017/AN_Messdaten_2017.xlsx
+
+#Define path where CSV files should be saved
+savepath: /media/bigdata/00_Projects/1_MetPVNet/Messkampagne/00_Messdaten/02_Messdaten_2017/

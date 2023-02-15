@@ -1,0 +1,51 @@
+# config file to create radiosonde files from COSMO data to perform Mystic simulations%
+
+# which output should be generated options: radiosonde, atmofile
+output_filetype: "atmofile"
+
+# path where COSMO netCDF data files are located
+path_cosmo: /project/meteo/work/Felix.Goedde/promotion/COSMO/clear_days_campaign2018
+
+# list of COSMO filenames
+fnames_cosmo: [cosmo_d2_20180912.nc] #,"cosmo_20170527.nc","cosmo_20170807.nc", "cosmo_20170825.nc","cosmo_20171015.nc"]
+
+# path where the (main directories of) radiosonde/atmosphere files will be saved
+path_radiosondefiles: /project/meteo/work/Felix.Goedde/promotion/COSMO/libradtran_input
+path_atmofiles: /project/meteo/work/Felix.Goedde/promotion/mystic_input/cosmo_atmosphere/debug_cosmomystic
+
+# names of COSMO variables and dimensions
+variable_names_cosmo:
+    pressure_lev: "P"
+    Temperature_lev: "T_generalVerticalLayer"
+    humidity_lev: "QV"
+
+    pressure_sfc: "PS"
+    Temperature_sfc: "T_2M"
+    humidity_sfc: "RELHUM_2M"
+
+    time: "time"
+    lat: "lat"
+    lon: "lon"
+    
+    level_alt: "HHL"
+
+# path, fname, variable names us standard atmosphere
+path_usstd: "/home/f/Felix.Goedde/libradtran/libRadtran/data/atmmod"
+fname_usstd: "afglus.dat"
+variable_names_usstd: ["z", "p", "T", "air", "O3", "O2", "H2O", "CO2", "NO2"]
+
+# timeresolution in minutes, if None: timeresolution equal to resolution of COSMO data
+timeresolution: 15.
+
+# reduce vertical resoloution to achieve better performance of Mystic
+reduce_vertical_resoloution: False
+
+# modify Ozone concentration in Atmosphere file. use False if you dont want to change anything,
+# provide the desired Ozone column in Dobson units (DU) if you want to change the concentration
+modify_ozone: False 
+
+# latitude, longitude of locations (position of solar power plants) within the COSMO grid
+stations_lat_lon:
+    PV_11: [47.653161, 10.496584]
+    # kempten: [47.75353,10.32313]
+    # wertach: [47.60599,10.41672]

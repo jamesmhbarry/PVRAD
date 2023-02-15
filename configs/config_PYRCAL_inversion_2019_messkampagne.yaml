@@ -1,0 +1,492 @@
+# config file for PV forward model calibration
+
+stations: MS_02
+
+# Details of PV stations    
+pv_stations:
+    MS_01:
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr015:            
+                tilt_ap: [20,0]
+                azimuth_ap: [180,5]
+                e_err_rel: 0.05
+                e_err_min: 10    
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min      
+            mordor:
+                tilt_ap: [0,5]
+                azimuth_ap: [0,5]
+                e_err_rel: 0.03
+                e_err_min: 5
+                name: Etotdown_CMP21_Wm2
+                t_res_inv: 1min     
+        irrad_names:
+            substat: mordor
+            DNI: Edirnorm_MS56_Wm2
+            DHI: Ediffdown_CMP21_Wm2
+            GHI: Etotdown_CMP21_Wm2
+             
+    MS_02:
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr007:            
+                tilt_ap: [30,0]
+                azimuth_ap: [180,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+            Pyr009:            
+                tilt_ap: [30,0]
+                azimuth_ap: [180,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+            Pyr086:            
+                tilt_ap: [30,0]
+                azimuth_ap: [180,5]            
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+            CMP11_32S:
+                tilt_ap: [32,0]
+                azimuth_ap: [180,5]
+                e_err_rel: 0.01
+                e_err_min: 10
+                name: Etotpoa_CMP11_Wm2
+                t_res_inv: 1min
+            CMP11_Horiz:
+                tilt_ap: [0,0]
+                azimuth_ap: [0,5]
+                e_err_rel: 0.01
+                e_err_min: 10
+                name: Etotdown_CMP11_Wm2
+                t_res_inv: 1min
+            SiRef_32S:
+                tilt_ap: [32,0]
+                azimuth_ap: [180,5]
+                e_err_rel: 0.01
+                e_err_min: 10
+                name: Etotpoa_Si02_Wm2
+                t_res_inv: 1min
+            SiRef_32E:
+                tilt_ap: [32,5]
+                azimuth_ap: [90,5]
+                e_err_rel: 0.01
+                e_err_min: 10
+                name: Etotpoa_Si02_Wm2
+                t_res_inv: 1min
+            SiRef_32W:
+                tilt_ap: [32,5]
+                azimuth_ap: [270,5]
+                e_err_rel: 0.01
+                e_err_min: 10
+                name: Etotpoa_Si02_Wm2
+                t_res_inv: 1min
+            # suntracker:
+            #     tilt_ap: [0,0]
+            #     azimuth_ap: [0,0.1]
+            #     e_err_rel: 0.01
+            #     e_err_min: 10
+            #     name: Etotdown_CMP11_Wm2
+            #     t_res_inv: 1min   
+        irrad_names:
+            substat: CMP11_Horiz #suntracker
+            # DNI: Edirnorm_CHP1_Wm2
+            # DHI: Ediffdown_CMP11_Wm2
+            GHI: Etotdown_CMP11_Wm2
+            
+    PV_01:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr018:
+                tilt_ap: [12,0]
+                azimuth_ap: [175,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr018          
+            GHI: Etotdown_pyr_Wm2      
+    PV_02:        
+        calibration_days: [2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24] #2019-06-26,
+        substat: 
+            Pyr054:            
+                tilt_ap: [5,0]
+                azimuth_ap: [180,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr054          
+            GHI: Etotdown_pyr_Wm2      
+    PV_04:     
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr025:
+                tilt_ap: [25,0]
+                azimuth_ap: [160,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr025          
+            GHI: Etotdown_pyr_Wm2      
+    PV_05:     
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr037:
+                tilt_ap: [30,0]
+                azimuth_ap: [180,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr037            
+            GHI: Etotdown_pyr_Wm2      
+    PV_06:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr024:
+                tilt_ap: [25,0]
+                azimuth_ap: [165,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+            Pyr005:
+                tilt_ap: [25,0]
+                azimuth_ap: [165,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+            Pyr046:
+                tilt_ap: [25,0]
+                azimuth_ap: [165,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr024            
+            GHI: Etotdown_pyr_Wm2      
+    PV_07:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr012:
+                tilt_ap: [34,0]
+                azimuth_ap: [165,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr012            
+            GHI: Etotdown_pyr_Wm2      
+    PV_10:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr044:
+                tilt_ap: [15,0]
+                azimuth_ap: [180,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr044           
+            GHI: Etotdown_pyr_Wm2      
+    PV_11:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr038:
+                tilt_ap: [62,0]
+                azimuth_ap: [190,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+            Pyr060:
+                tilt_ap: [30,0]
+                azimuth_ap: [190,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: [Pyr038,Pyr060]
+            GHI: Etotdown_pyr_Wm2      
+    PV_12:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr055:
+                tilt_ap: [27,0]
+                azimuth_ap: [130,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+            RT1:
+                tilt_ap: [27,0]
+                azimuth_ap: [130,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_RT1_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr055          
+            GHI: Etotdown_pyr_Wm2      
+    PV_13:     
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr053:
+                tilt_ap: [29,0]
+                azimuth_ap: [163,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr053          
+            GHI: Etotdown_pyr_Wm2      
+    PV_14:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr087:
+                tilt_ap: [25,0]
+                azimuth_ap: [155,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr087            
+            GHI: Etotdown_pyr_Wm2      
+    PV_15:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr035:
+                tilt_ap: [11,0]
+                azimuth_ap: [230,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr035        
+            GHI: Etotdown_pyr_Wm2      
+    PV_16:     
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr026:
+                tilt_ap: [20,0]
+                azimuth_ap: [135,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr026           
+            GHI: Etotdown_pyr_Wm2      
+    PV_17:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr014:
+                tilt_ap: [20,0]
+                azimuth_ap: [175,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr014          
+            GHI: Etotdown_pyr_Wm2      
+    PV_18:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr010:
+                tilt_ap: [20,0]
+                azimuth_ap: [205,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr010         
+            GHI: Etotdown_pyr_Wm2      
+    PV_19:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr043:
+                tilt_ap: [22,0]
+                azimuth_ap: [140,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr043        
+            GHI: Etotdown_pyr_Wm2      
+    PV_20:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr033:
+                tilt_ap: [23,0]
+                azimuth_ap: [190,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr033      
+            GHI: Etotdown_pyr_Wm2      
+    PV_21:     
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr047:
+                tilt_ap: [20,0]
+                azimuth_ap: [190,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr047            
+            GHI: Etotdown_pyr_Wm2      
+    PV_22:        
+        calibration_days: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,2019-07-04,
+            2019-07-23,2019-07-24]
+        substat: 
+            Pyr032:
+                tilt_ap: [22,0]
+                azimuth_ap: [190,5]
+                e_err_rel: 0.05
+                e_err_min: 10
+                name: Etotpoa_pyr_Wm2
+                t_res_inv: 1min
+        irrad_names:
+            substat: Pyr032          
+            GHI: Etotdown_pyr_Wm2      
+
+#Surface data source, can be measured or cosmo
+surface_data: cosmo
+
+#If true then run cosmo2pvcal or cosmo2pvcod
+#If false then data will just be read out
+cosmo_input_flag: 
+    surface: False
+    cloud: False
+        
+# Cosmo path
+cosmopvcal_configfile: MetPVNet/Code/Current/pvcal/config_COSMO2PVCALinput_2019_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+cosmopvcod_configfile: MetPVNet/Code/Current/pvcal/config_COSMO2PVCODinput_2019_messkampagne.yaml
+
+#If true then run msgseviri2pvcod
+seviri_input_flag: False
+
+#config file for SEVIRI data
+seviripvcod_configfile: MetPVNet/Code/Current/pvcal/config_SEVIRI2PVCODinput_2019_messkampagne.yaml
+
+# SZA range to use
+sza_max: 
+    calibration: 60.0
+    inversion: 80.0
+    gti: 60.0
+
+#Optical constants
+optics:    
+    flag: False
+    kappa: 4 #extinction coefficient (m^-1)
+    L: 0.002 #glazing thickness (m)
+
+##apriori values for inversion
+calibration:
+    n_ap: [1.526,0.01]#5]    #For n we have to take a small error!!
+    n_diff: 0.01 #Increment for differentiation wrt n
+    convergence_limit: 0.05
+    max_iterations: 20
+    gamma: 
+        initial_value: 1.0
+        factor: 5.0
+        
+#Cosinus bias correction using cubic polynomial 
+#c_0 mu^3 + c_1 mu^2 + c_2 mu + c_3 
+bias_correction:
+    flag: True #False
+    poly:
+        c_0: -3.01
+        c_1: 5.59
+        c_2: -3.04
+        c_3: 1.45
+        
+falltage: [2019-07-19,2019-07-28,2019-07-31]
+
+test_days:
+    overcast: [2019-07-08,2019-07-11,2019-07-28,2019-07-31]
+    variable_low: [2019-07-07,2019-07-12,2019-07-21]
+    variable_high: [2019-07-15,2019-07-19,2019-07-21]
+
+#Averaging window for cloud fraction
+cloud_fraction:
+    cs_threshold: [0.8,1.1]
+    cf_avg_window: 60min
+    
+#This can be either "cloudy" or "linear_combination"
+cod_fit_method: cloudy
+    
+#GHI LUT config
+ghilut_config:
+    angles: calibration #apriori
+    cf_lims: [0.13,0.82]
+    sza_lims: [20.,60.]
+    rel_azi_max: 90.
+    tilt_lims: [0.,50.]
+    fname: MetPVNet/Code/Current/gti2ghi_lookup_table/apply_lut/data/gti2ghi_lut_v1.nc
+
+t_res_inversion: [1min,15min]
+
+cams_data_path:    
+    mk_2019: MetPVNet/Data/CAMS/2019
+
+results_path: 
+    main: MetPVNet/Results
+    calibration: PYRCAL
+    cloud_fraction: PYR2CF
+    optical_depth: PVPYR2OD
+    irradiance: PVPYR2GHI
+    csv_files: CSV
+    plots: 
+        fits: Fit_Plots
+        cod: COD_Plots
+        aod: AOD_Plots
+        ghi: GHI_GTI_Plots
+        dni: DNI_DHI_GHI_Plots
+

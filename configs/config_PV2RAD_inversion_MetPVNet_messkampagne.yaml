@@ -1,0 +1,364 @@
+#config file for inversion of PV power/current onto irradiance
+
+#Source of data for the calibration
+calibration_source: [messkampagne_2018_clear_sky,messkampagne_2019_all_sky]
+
+#Which stations to perform simulation on
+stations: MS_02 #all #[PV_06] 
+
+inversion_source: [messkampagne_2018_clear_sky,messkampagne_2019_all_sky] #
+
+# Details of PV stations    
+pv_stations:
+    MS_02:                
+        p_ac_15min:
+            source: [mk_2018,mk_2019]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_2:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt
+            pyr_down:
+                mk_2018: [MS_02,suntracker]
+                mk_2019: [MS_02,CMP11_Horiz]
+                
+        p_ac_1sec:
+            source: [mk_2019]       
+            type: power
+            t_res_inv: 1min
+            data:
+                egrid_1:     
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W
+                egrid_2:            
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W
+                egrid_3:                
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W
+            pyr_down:
+                mk_2018: [MS_02,suntracker]
+                mk_2019: [MS_02,CMP11_Horiz]
+        # i_dc_5min:
+        #     source: [mk_2019]       
+        #     type: current
+        #     t_res_inv: 5min
+        #     data:
+        #         WR_1:     
+        #             i_err_rel: 0.05 #Relative error in power measurement
+        #             i_err_min: 0.05 #Minimum power measurement error in W
+        #         WR_2:        
+        #             i_err_rel: 0.05 #Relative error in power measurement
+        #             i_err_min: 0.05 #Minimum power measurement error in W    
+        #         WR_3:            
+        #             i_err_rel: 0.05 #Relative error in power measurement
+        #             i_err_min: 0.05 #Minimum power measurement error in W                
+    PV_01:                
+        p_ac_15min:
+            source: [mk_2018,mk_2019]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_1:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt  
+            pyr_down:
+                mk_2018: [PV_01,Pyr007]
+                mk_2019: [PV_01,Pyr018]
+    # PV_03:                
+    #     p_ac_15min:
+    #         source: [mk_2018,mk_2019]
+    #         type: power
+    #         t_res_inv: 15min
+    #         data:
+    #             auew_1:                                                    
+    #                 p_err_rel: 0.01 #Relative error in power measurement
+    #                 p_err_min: 100 #Minimum power measurement error in Watt      
+    #         pyr_down:
+    #             mk_2018: [PV_02,Pyr009]
+    #             mk_2019: [PV_02,Pyr054]
+    # PV_04:                        
+    #     p_ac_1sec:
+    #         source: [mk_2018,mk_2019]       
+    #         type: power
+    #         t_res_inv: 1min
+    #         data:
+    #             egrid:     
+    #                 p_err_rel: 0.01 #Relative error in power measurement
+    #                 p_err_min: 100 #Minimum power measurement error in W                
+    #         pyr_down:
+    #             mk_2018: [PV_04,Pyr047]
+    #             mk_2019: [PV_04,Pyr025]
+    PV_06:                
+        p_ac_15min:
+            source: [mk_2018,mk_2019]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_2:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt
+            pyr_down:
+                mk_2018: [PV_06,Pyr053]
+                mk_2019: [PV_06,Pyr024]
+    # PV_07:                
+    #     p_ac_15min:
+    #         source: [mk_2018,mk_2019]
+    #         type: power
+    #         t_res_inv: 15min
+    #         data:
+    #             auew_1:                                                    
+    #                 p_err_rel: 0.01 #Relative error in power measurement
+    #                 p_err_min: 100 #Minimum power measurement error in Watt
+    #         pyr_down:
+    #             mk_2018: [PV_07,Pyr018]
+    #             mk_2019: [PV_07,Pyr012]
+    PV_08:                
+        p_ac_15min:
+            source: [mk_2018]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_1:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt
+            pyr_down:
+                mk_2018: [PV_08,Pyr043]
+    # PV_09:                
+    #     p_ac_15min:
+    #         source: [mk_2018,mk_2019]
+    #         type: power
+    #         t_res_inv: 15min
+    #         data:
+    #             auew_1:                                                    
+    #                 p_err_rel: 0.01 #Relative error in power measurement
+    #                 p_err_min: 100 #Minimum power measurement error in Watt
+    #         pyr_down:
+    #             mk_2018: [MS_01,Pyr055]
+    #             mk_2019: [MS_01,Pyr015]
+    PV_10:                
+        p_ac_15min:
+            source: [mk_2018,mk_2019]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_1:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt
+            pyr_down:
+                mk_2018: [PV_10,Pyr015]
+                mk_2019: [PV_10,Pyr044]
+    PV_11:                        
+        p_ac_1sec_2018:
+            source: [mk_2018]       
+            type: power
+            t_res_inv: 1min
+            data:
+                egrid_1:     
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W                        
+            pyr_down:
+                mk_2018: [PV_11,Pyr001]                
+        p_ac_1sec_2019:
+            source: [mk_2019]       
+            type: power
+            t_res_inv: 1min
+            data:
+                egrid_2:     
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W       
+            pyr_down:
+                mk_2019: [PV_11,Pyr060]            
+        p_ac_15min:
+            source: [mk_2018,mk_2019]       
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_1:     
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W                        
+                auew_2:     
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W                
+                auew_3:     
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W                
+            pyr_down:
+                mk_2018: [PV_11,Pyr004]
+                mk_2019: [PV_11,Pyr060]
+    PV_12:                        
+        p_ac_1sec:
+            source: [mk_2018,mk_2019]       
+            type: power
+            t_res_inv: 1min
+            data:
+                egrid:     
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W                
+            pyr_down:
+                mk_2018: [PV_12,Pyr026]
+                mk_2019: [PV_12,Pyr055]
+    PV_14:                
+        p_ac_15min:
+            source: [mk_2018,mk_2019]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_1:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt
+            pyr_down:
+                mk_2018: [PV_14,Pyr025]
+                mk_2019: [PV_14,Pyr087]
+    PV_15:                        
+        p_ac_1sec:
+            source: [mk_2018,mk_2019]       
+            type: power
+            t_res_inv: 1min
+            data:
+                egrid:     
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W                
+            pyr_down:
+                mk_2018: [PV_15,Pyr044]
+                mk_2019: [PV_15,Pyr035]
+    PV_16:                
+        p_ac_15min:
+            source: [mk_2018,mk_2019]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_1:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt
+            pyr_down:
+                mk_2018: [PV_16,Pyr038]
+                mk_2019: [PV_16,Pyr026]
+    PV_17:                
+        p_ac_15min:
+            source: [mk_2019]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_1:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt
+            pyr_down:
+                mk_2018: [PV_17,Pyr087]
+                mk_2019: [PV_17,Pyr014]
+    PV_18:                
+        p_ac_15min:
+            source: [mk_2018,mk_2019]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_1:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt
+            pyr_down:
+                mk_2018: [PV_18,Pyr060]
+                mk_2019: [PV_18,Pyr010]
+    PV_19:                        
+        p_ac_1sec:
+            source: [mk_2018,mk_2019]       
+            type: power
+            t_res_inv: 1min
+            data:
+                egrid:     
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in W                
+            pyr_down:
+                mk_2018: [PV_19,Pyr086]
+                mk_2019: [PV_19,Pyr043]
+    PV_21:                
+        p_ac_15min:
+            source: [mk_2018,mk_2019]
+            type: power
+            t_res_inv: 15min
+            data:
+                auew_1:                                                    
+                    p_err_rel: 0.01 #Relative error in power measurement
+                    p_err_min: 100 #Minimum power measurement error in Watt
+            pyr_down:
+                mk_2018: [PV_21,Pyr032]
+                mk_2019: [PV_21,Pyr047]
+    # PV_22:                
+    #     p_ac_15min:
+    #         source: [mk_2018,mk_2019]
+    #         type: power
+    #         t_res_inv: 15min
+    #         data:
+    #             auew_1:                                                    
+    #                 p_err_rel: 0.01 #Relative error in power measurement
+    #                 p_err_min: 100 #Minimum power measurement error in Watt
+    #         pyr_down:
+    #             mk_2018: [PV_22,Pyr033]
+    #             mk_2019: [PV_22,Pyr032]
+        
+sza_max: 
+    poa: 90.0
+    inversion: 80.0
+    od: 80.0
+
+timeres_temp: 1min
+n_past_temp: 120
+all_points_temp: True #False
+
+cosmo_errors:
+    temp: [2,abs]
+    wind: [0.05,rel]
+    
+meas_errors:
+    t_mod: [1,abs]
+    t_amb_pyr: [1,abs]
+    v_wind: [0.15,abs]    
+    g_lw: [0.02,rel]
+    
+spectral_mismatch_all_sky: 
+    flag: True #False
+    model: interpolated #simple
+    
+falltage: 
+    mk_2018: [2018-09-15,2018-09-21,2018-10-01]
+    mk_2019: [2019-07-19,2019-07-28,2019-07-31]
+    
+timeres_comparison: ["1min","15min"]
+
+#Averaging window for cloud fraction
+cloud_fraction:
+    cs_threshold: [0.8,1.1]
+    cf_avg_window: 60min
+    
+#This can be either "cloudy" or "linear_combination"
+cod_fit_method: cloudy
+    
+#GHI LUT config
+ghilut_config:
+    angles: calibration
+    cf_lims: [0.13,0.82]
+    sza_lims: [20.,60.]
+    rel_azi_max: 90.
+    tilt_lims: [0.,50.]
+    fname: MetPVNet/Code/Current/gti2ghi_lookup_table/apply_lut/data/gti2ghi_lut_v1.nc
+    spectral_mismatch_lut:
+        clear_sky: MetPVNet/Data/Water_Vapour_LUT/MS02/clear_sky
+
+cams_data_path:
+    mk_2018: MetPVNet/Data/CAMS/2018
+    mk_2019: MetPVNet/Data/CAMS/2019
+
+results_path: 
+    main: MetPVNet/Results
+    calibration: PVCAL
+    inversion: PV2POARAD
+    optical_depth: PVPYR2OD
+    temp_model: PVTEMP
+    irradiance: PVPYR2GHI
+    csv_files: CSV
+    plots: 
+        fits: Fit_Plots
+        cod: COD_Plots
+        aod: AOD_Plots
+        ghi: GHI_GTI_Plots
+        dni: DNI_DHI_GHI_Plots

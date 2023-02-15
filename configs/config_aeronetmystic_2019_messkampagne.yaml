@@ -1,0 +1,85 @@
+# config file for aeronet import program
+    
+#Description of data
+description: messkampagne_2019_all_sky
+
+# Path for aerosol files
+path_aerosol_data: MetPVNet/Data/Aeronet/raw_data/
+
+# Path to save aerosol data and fits
+path_fit_data: MetPVNet/Data/Aeronet/fit_data/
+
+# Plot path
+path_plots: 
+    main: MetPVNet/Data/Aeronet/Plots/
+    raw: raw_data
+    fits: Angstrom_Fits
+
+# Details of aeronet stations
+aeronet_stations:
+    KP:
+        name: Kempten
+        lat_lon: [47.71583,10.31413]
+        altitude: 718.0
+        aod_files:
+            all: 20190601_20190731_KEMPTEN_UAS.lev20
+            day_ave: 20190601_20190731_KEMPTEN_UAS_ave_day.lev20
+            version: 3
+        ssa_files:
+            all: 20190601_20190731_KEMPTEN_UAS.ssa
+            day_ave: 20190601_20190731_KEMPTEN_UAS_ave_day.ssa
+            version: 3     
+#    HP:
+#        name: Hohenpeissenberg        
+#        lat_lon: [47.80190,11.01190] 
+#        altitude: 989.7
+#        aod_files:
+#            all: 20190601_20190815_HohenpeissenbergDWD.lev15
+#            day_ave: 20190601_20190815_HohenpeissenbergDWD_ave_day.lev15
+#            version: 3
+#        ssa_files: 
+#            all: 20190601_20190815_HohenpeissenbergDWD.ssa
+#            day_ave: 20190601_20190815_HohenpeissenbergDWD_ave_day.ssa
+#            version: 3
+#    MU:
+#        name: Munich        
+#        lat_lon: [48.14800,11.57300]
+#        altitude: 533.0
+#        aod_files: 
+#            all: 170101_171231_Munich_University.lev20
+#            day_ave: 170101_171231_Munich_University_ave_day.lev20#180901_181031_Munich_University_ave_day.lev15
+#        ssa_files: 
+#            all: 170101_171231_Munich_University.ssa
+#            day_ave: 170101_171231_Munich_University.ssaday#180901_181031_Munich_University.ssaday
+#    laegeren:
+#        name: Laegeren
+#        code: LA
+#        lat_lon: [47.47835,8.36435]
+#        altitude: 763.0
+#        aod_file: 170101_171231_Laegeren_ave_day.lev15#170101_171231_Munich_University.lev20#
+#        ssa_file: 180901_181031_Munich_University.ssaday#170101_171231_Munich_University.ssaday#
+        
+# Choose whether to calculate mean and which stations to use, i.e. [KP,MU]
+mean_stations: KP
+      
+#Wavelength range for fitting
+fit_range: [300.0,1200.0]
+
+#Choose whether to fit all values or just daily averages
+fit_config:
+    day_ave: True
+    all: True
+
+#Time resolution for interpolation in minutes
+timeres: 15
+
+# Plot flag
+plot_flag: True
+
+#Pad values - fills up the nan values with averages
+pad_values: True #False
+
+#Whether to consider quadratic term or not
+curvature: False #True        
+    
+        

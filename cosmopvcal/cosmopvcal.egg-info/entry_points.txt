@@ -1,0 +1,3 @@
+[console_scripts]
+cosmo2pvcal = cosmopvcal.cosmo_surface_props:main
+

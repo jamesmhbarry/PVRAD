@@ -1,0 +1,45 @@
+# config file for PV forward model calibration
+
+#Description of datasets for current simulation
+description: [messkampagne_2018_clear_sky,messkampagne_2019_all_sky] #
+
+#Configuration of raw data
+data_configfile: 
+    mk_2018: config_data_2018_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+    mk_2019: config_data_2019_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+    
+#Configuration of DISORT RT simulation
+rt_configfile: config_PVPYRCAL_RT_MetPVNet_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/    
+
+#Configuration of pyranometer calibration
+pyrcalod_configfile: 
+    mk_2018: config_PYRCAL_inversion_2018_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+    mk_2019: config_PYRCAL_inversion_2019_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+    
+#Configuration of PV calibration
+pvcal_configfile: config_PVCAL_inversion_MetPVNet_messkampagne.yaml
+
+#Configuration of PV to rad    
+pvrad_configfile: config_PV2RAD_inversion_MetPVNet_messkampagne.yaml
+    
+#Plot style
+plot_styles: 
+    single_small: my_paper
+    combo_small: my_paper_grid
+    single_large: my_presi
+    combo_large: my_presi_grid
+    
+plot_flags:     
+    lut: False # True 
+    compare: False #True #True #False #True 
+    scatter: False #True #False #True 
+    stats: True #True 
+    combo_stats: True
+    titles: False
+
+#Define the window size for moving average, for comparison with satellite and weather data    
+window_size_moving_average: [60min] #,120min,180min]
+
+results_path: 
+    main: MetPVNet/Results
+    final: PVPYR2OD2RAD

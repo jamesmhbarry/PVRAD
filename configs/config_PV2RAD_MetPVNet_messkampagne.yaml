@@ -1,0 +1,39 @@
+# config file for PV forward model calibration
+
+#Description of datasets for current simulation
+description: [test_2017_clear_sky,messkampagne_2018_clear_sky,messkampagne_2019_all_sky]
+
+#Configuration of raw data
+data_configfile: 
+    mk_2017: config_data_2017_test.yaml
+    mk_2018: config_data_2018_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+    mk_2019: config_data_2019_messkampagne.yaml
+    
+#Configuration of DISORT RT simulation
+rt_configfile: config_PVPYRCAL_RT_MetPVNet_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+
+#Configuration of calibration and PV model
+pvcal_configfile: config_PVCAL_inversion_MetPVNet_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+
+#Configuration for inversion onto irradiance
+pvrad_configfile: config_PV2RAD_inversion_MetPVNet_messkampagne.yaml
+
+#Configuration of pyranometers
+pyrcal_configfile: 
+    mk_2018: config_PYRCAL_inversion_2018_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+    mk_2019: config_PYRCAL_inversion_2019_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+    
+#Plot style
+plot_styles: 
+    single_small: my_paper
+    combo_small: my_paper_grid
+    single_large: my_presi
+    combo_large: my_presi_grid
+    
+plot_flags:         
+    compare: False #True #äFalse #True #True #False #True 
+    scatter: True #False #True #False #True #False #True 
+    spectral: False ##True
+    stats: False #True #True 
+    combo_stats: True #False #True #False #True #False #True    
+    titles: False

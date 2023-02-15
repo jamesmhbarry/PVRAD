@@ -1,0 +1,30 @@
+Metadata-Version: 2.1
+Name: aeronetmystic
+Version: 0.0.1
+Summary: extract Aeronet Data for input into libRadtran simulation
+Home-page: UNKNOWN
+Author: James Barry
+Author-email: 
+License: UNKNOWN
+Description: # aeronetmystic
+        
+        to install run:
+        ```
+        pip install -e .
+        ```
+        
+        Then run:
+        ```
+        aeronet2mystic -h
+        
+        ```
+        
+        ### Bugs
+        -Still need to check mean function works properly
+        
+        
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: MIT License
+Description-Content-Type: text/markdown

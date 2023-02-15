@@ -1,0 +1,958 @@
+# config file for PV forward model calibration
+
+#Source of data for the calibration
+calibration_source: [messkampagne_2018_clear_sky,messkampagne_2019_all_sky] #
+
+#Which stations to perform simulation on
+stations: MS_02 #09 #MS_02 #[PV_04]
+
+# Details of PV stations    
+pv_stations:
+    MS_02:
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-20,2018-09-27, # #
+                2018-10-05,2018-10-12,2018-10-13,2018-10-14] #,,2018-09-17, 2018-09-30,2018-10-04, 2018-10-08, 2018-10-10
+            mk_2019: [2019-06-24,2019-06-25,2019-06-26,2019-06-27,2019-06-28,
+                2019-06-29,2019-06-30,2019-07-23,2019-07-24] #These are for the inverter data  #[2019-07-23,]
+        substat: 
+            auew_2:    
+                model: [power]
+                mount: open
+                error_days:
+                    mk_2018: []
+                    mk_2019: [2019-07-24]        
+                tilt_ap: [32,5]
+                azimuth_ap: [180,5]                
+                zeta_ap: [0.0045,0.]                
+                pdcn_ap: 87.55 #100  #354*0.14 
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+            WR_1:            
+                model: [current]
+                mount: open
+                tilt_ap: [32,5]
+                azimuth_ap: [180,5]                
+                pdcn_ap: 30 #100  #354*0.14 
+                zeta_ap: [0.0045,0.]    
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in W
+                i_err_rel: 0.01
+                i_err_min: 0.005
+                inverter_strings: [1,2,3]
+            WR_2:            
+                model: [current]
+                mount: open
+                tilt_ap: [32,5]
+                azimuth_ap: [180,5]                
+                pdcn_ap: 30 #100  #354*0.14 
+                zeta_ap: [0.0045,0.]    
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in W    
+                i_err_rel: 0.01
+                i_err_min: 0.005
+                inverter_strings: [1,2,3]
+            WR_3:            
+                model: [current]
+                mount: open
+                tilt_ap: [32,5]
+                azimuth_ap: [180,5]                
+                pdcn_ap: 30 #100  #354*0.14 
+                zeta_ap: [0.0045,0.]    
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in W
+                i_err_rel: 0.01
+                i_err_min: 0.005
+                inverter_strings: [1,2,3]
+            egrid_1:          
+                model: [power]  
+                mount: open
+                tilt_ap: [32,5]
+                azimuth_ap: [180,5]                
+                pdcn_ap: 30 #100  #354*0.14 
+                zeta_ap: [0.0045,0.]    
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in W
+            egrid_2:            
+                model: [power]
+                mount: open
+                tilt_ap: [32,5]
+                azimuth_ap: [180,5]                
+                pdcn_ap: 30 #100  #354*0.14 
+                zeta_ap: [0.0045,0.]    
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in W
+            egrid_3:            
+                model: [power]
+                mount: open
+                tilt_ap: [32,5]
+                azimuth_ap: [180,5]                
+                pdcn_ap: 30 #100  #354*0.14 
+                zeta_ap: [0.0045,0.]    
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in W
+        input_data:
+            wind: 
+                mk_2018: Windmast #cosmo
+                mk_2019: Windmast #cosmo
+            irrad: 
+                mk_2018: Pyr012
+                mk_2019: Pyr086
+            temp_module:
+                mk_2018: PVTemp_1
+                mk_2019: dynamic_model
+            temp_amb: 
+                mk_2018: Pyr012    
+                mk_2019: Pyr086 #cosmo #Pyr012    
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+        diode_model: #Values from the datasheet
+            Iscn: [5.53,0.]
+            Vocn: [43.35,0.]
+            Impn: [5.03,0.]
+            Vmpn: [35.83,0.]
+            Kv: [-0.0035,0.]
+            Ki: [0.0004,0.]            
+            Ns: [72.,0.] #- Anzahl Zellen pro Modul
+            Nss: [14.,0.] #- Anzahl Module in Serie 
+            Npp: [4.,0.] #- Anzahl Module parallel    
+            # Rs: 0.354 #Ohm
+            # Rp: 154.69 #Ohm
+            # a1: 1.
+            # a2: 1.2         
+    PV_01:        
+        calibration_days: #In 2018 the data was rubbish!
+            mk_2018: [] #2018-09-12,2018-09-17,2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05,
+            #2018-10-10,2018-10-12,2018-10-13,2018-10-14] #2018-10-08,
+            mk_2019: [2019-06-24,2019-06-25,2019-06-28, 
+                2019-06-29,2019-06-30,2019-07-23,2019-07-24] #2019-06-26,2019-06-27,
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof
+                tilt_ap: [12,5]
+                azimuth_ap: [172,5]
+                pdcn_ap: 60  #354*0.14
+                zeta_ap: [0.0045,0.05]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr007
+                mk_2019: Pyr018
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr007 #cosmo 
+                mk_2019: Pyr018 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+        # diode_model: #Values from the datasheet
+        #     Iscn: 5.53
+        #     Vocn: 43.35
+        #     Impn: 5.03
+        #     Vmpn: 35.83
+        #     Kv: -0.0035
+        #     Ki: -0.0004
+        #     #Acell = (1.25*1.25)/1000 m^2 - PV-Zellenfläche
+        #     Ns: 72 #- Anzahl Zellen pro Modul
+        #     Nss: 14 #- Anzahl Module in Serie 
+        #     Npp: 4 #- Anzahl Module parallel  
+    PV_03:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-17,2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05,
+            2018-10-10,2018-10-12,2018-10-13,2018-10-14] #2018-10-08,
+            mk_2019: [2019-06-24,2019-06-27,2019-06-28,2019-06-30,2019-07-04,
+            2019-07-23]
+        substat: 
+            auew_1:    
+                model: [power]    
+                mount: roof    
+                tilt_ap: [5,5]
+                azimuth_ap: [165,5]
+                pdcn_ap: 150  #354*0.14   
+                zeta_ap: [0.0045,0.0]  
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: None
+                mk_2019: None
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: cosmo 
+                mk_2019: cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+        # diode_model: #Values from the datasheet
+        #     Iscn: 5.53
+        #     Vocn: 43.35
+        #     Impn: 5.03
+        #     Vmpn: 35.83
+        #     Kv: -0.0035
+        #     Ki: -0.0004
+        #     #Acell = (1.25*1.25)/1000 m^2 - PV-Zellenfläche
+        #     Ns: 72 #- Anzahl Zellen pro Modul
+        #     Nss: 14 #- Anzahl Module in Serie 
+        #     Npp: 4 #- Anzahl Module parallel  
+            
+    PV_04:     
+        calibration_days: 
+            mk_2018: [2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05,
+            2018-10-10,2018-10-12,2018-10-13,2018-10-14] #,,,  2018-09-17, 2018-10-08,2018-09-12,
+            mk_2019: [2019-06-27,2019-06-28, #2019-06-29,2019-06-30, 2019-07-04,
+            2019-07-23,2019-07-24] #
+        substat: 
+            egrid:
+                model: [power]
+                mount: roof
+                tilt_ap: [25,5]
+                azimuth_ap: [158,5]
+                pdcn_ap: 19.107  #354*0.14
+                zeta_ap: [0.00485,0.]    
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo 
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr047
+                mk_2019: Pyr025
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr047 #cosmo 
+                mk_2019: Pyr025 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+        diode_model: #Values from the datasheet
+            Iscn: 8.37
+            Vocn: 30
+            Impn: 
+            Vmpn: 23.7
+            Kv: -0.0035
+            Ki: -0.0004
+            #Acell = (1.25*1.25)/1000 m^2 - PV-Zellenfläche
+            Ns: 72 #- Anzahl Zellen pro Modul
+            Nss: 14 #- Anzahl Module in Serie 
+            Npp: 4 #- Anzahl Module parallel  
+                
+    PV_06:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-20,2018-09-27,2018-10-04,2018-10-05,
+            2018-10-12,2018-10-13,2018-10-14] #,2018-09-17,2018-09-30,,,,,2018-10-08,2018-10-10,
+            mk_2019: [2019-06-24,2019-06-26,2019-06-28,
+            2019-06-29,2019-06-30,2019-07-23,2019-07-24,2019-08-09] #2019-06-25,2019-06-27,
+        substat: 
+#            auew_1:
+#                tilt_ap: [30,5]
+#                azimuth_ap: [180,5]
+#                pdcn_ap: 2  #354*0.14    
+#                p_err_min: 100 #Minimum power measurement error in Watt
+            auew_2:
+                model: [power]
+                mount: open
+                tilt_ap: [25,5]
+                azimuth_ap: [180,5]
+                pdcn_ap: 1500  #354*0.
+                zeta_ap: [0.0045,0.]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo 
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr053
+                mk_2019: Pyr005
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr053 #cosmo 
+                mk_2019: Pyr005 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_07:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05, #,
+            2018-10-10,2018-10-12,2018-10-13,2018-10-14] #2018-09-17,,2018-10-08,
+            mk_2019: [2019-06-24,2019-06-25,2019-06-26,2019-06-24,2019-06-28,
+            2019-06-29,2019-06-30,2019-07-04,2019-07-23,2019-07-24]
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof
+                tilt_ap: [10,5]
+                azimuth_ap: [70,5]
+                pdcn_ap: 100  #354*0.14  
+                zeta_ap: [0.0045,0.]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo 
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr018
+                mk_2019: Pyr012
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr018 #cosmo 
+                mk_2019: Pyr012 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_08:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-20,2018-09-30,2018-10-05,
+            2018-10-10,2018-10-13,2018-10-14] #,2018-09-17,2018-09-27,2018-10-04,2018-10-082018-10-12,
+            mk_2019: []
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof
+                tilt_ap: [23,5]
+                azimuth_ap: [155,5]
+                pdcn_ap: 30  #354*0.14   
+                zeta_ap: [0.0047,0.]
+                p_err_min: 100 #Minimum power measurement error in Watt
+                p_err_rel: 0.01 #Relative error in power measurement
+                area: 231.582
+                #p_dc_nom: 30.78
+        input_data:
+            wind: 
+                mk_2018: cosmo                
+            irrad: 
+                mk_2018: Pyr043
+            temp_module: 
+                mk_2018: static_model                
+            temp_amb: 
+                mk_2018: Pyr043 #cosmo 
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]                
+    PV_09:        
+        calibration_days: 
+            mk_2018: []#[2018-09-12,2018-09-20,2018-09-27] #,2018-10-05,
+            #2018-10-12,2018-10-13,2018-10-14] #,2018-09-17,2018-09-30,2018-10-04,2018-10-08,2018-10-10,
+            mk_2019: [2019-06-25,2019-06-27,2019-06-30,
+                    2019-07-04,2019-07-23,2019-07-24]
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof_open
+                tilt_ap: [20,5]
+                azimuth_ap: [155,5]
+                n_ap: [1.526,0.01]
+                pdcn_ap: 200  #354*0.14 
+                zeta_ap: [0.0037,0.0]  
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimu m power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo 
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: None
+                mk_2019: None
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: cosmo 
+                mk_2019: cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_10:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-20,2018-09-27,2018-09-30,2018-10-04,
+            2018-10-05,2018-10-08,2018-10-10,2018-10-12,2018-10-13,2018-10-14] #,
+            mk_2019: [2019-06-26,2019-06-28,2019-06-29,2019-06-30,
+            2019-07-23,2019-07-24]
+        substat: 
+            auew_1:
+                model: [power]
+                mount: open
+                tilt_ap: [15,5]
+                azimuth_ap: [180,5]
+                pdcn_ap: 800  #354*0.14  
+                zeta_ap: [0.0043,0.] 
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo 
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr015
+                mk_2019: Pyr044
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr015 #cosmo 
+                mk_2019: Pyr044 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_11:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05,
+            2018-10-10,2018-10-14] #2018-09-17,2018-09-20,2018-10-08, ,2018-10-12, 2018-10-13,
+            mk_2019: [2019-06-24,2019-06-28,2019-06-29,2019-06-30,
+            2019-07-04,2019-07-23,2019-07-24] #2019-06-25,
+        substat: 
+            egrid_1:
+                model: [power]
+                mount: open
+                error_days:
+                    mk_2018: [2018-09-20]
+                    mk_2019: []
+                tilt_ap: [62,5]
+                azimuth_ap: [184,5]
+                pdcn_ap: 10  #354*0.14
+                zeta_ap: [0.0048,0.] 
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+            egrid_2:
+                model: [power]
+                mount: roof
+                tilt_ap: [30,5]
+                azimuth_ap: [184,5]
+                pdcn_ap: 100  #354*0.14
+                zeta_ap: [0.0048,0.] 
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+            auew_1:
+                model: [power]
+                mount: roof
+                error_days:
+                    mk_2018: []
+                    mk_2019: [2019-07-23]
+                tilt_ap: [30,5]
+                azimuth_ap: [184,5]
+                n_ap: [1.526,0.]#5]    #For n we have to take a small error!!
+                pdcn_ap: 100  #354*0.14
+                zeta_ap: [0.0048,0.] 
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+            auew_2:
+                model: [power]
+                mount: roof
+                error_days:
+                    mk_2018: []
+                    mk_2019: [2019-07-23]
+                tilt_ap: [30,5]
+                azimuth_ap: [182,5]
+                pdcn_ap: 80  #354*0.14
+                zeta_ap: [0.0048,0.] 
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+            auew_3:
+                model: [power]
+                mount: roof
+                error_days:
+                    mk_2018: []
+                    mk_2019: [2019-07-23]
+                tilt_ap: [30,5]
+                azimuth_ap: [189,5]
+                n_ap: [1.526,0.]
+                pdcn_ap: 20  #354*0.14
+                zeta_ap: [0.0048,0.] 
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: Windmast
+                mk_2019: Windmast #cosmo
+            irrad: 
+                mk_2018: Pyr001
+                mk_2019: Pyr038
+            temp_module: 
+                mk_2018: PVTemp_1
+                mk_2019: RT1
+            temp_amb: 
+                mk_2018: Pyr001 #cosmo
+                mk_2019: Pyr038 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_12:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-20,2018-09-27,2018-10-04,2018-10-05,
+            2018-10-10,2018-10-12,2018-10-13,2018-10-14] #2018-09-17,2018-09-30,2018-10-08,
+            mk_2019: [2019-07-23,2019-07-24]
+        substat: 
+            egrid:
+                model: [power]
+                mount: roof
+                tilt_ap: [26,0]
+                azimuth_ap: [136,5]
+                pdcn_ap: 17.73 #20  #354*0.14    
+                zeta_ap: [0.005,0.05]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo 
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr026
+                mk_2019: Pyr055
+            temp_module: 
+                mk_2018: PVTemp_1
+                mk_2019: RT1
+            temp_amb: 
+                mk_2018: Pyr026 #cosmo 
+                mk_2019: Pyr055 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_13:     
+        calibration_days: 
+            mk_2018: [] #,,,   
+            mk_2019: [2019-07-23,2019-07-24]
+        substat:             
+            WR_1:            
+                model: [power]
+                mount: roof
+                tilt_ap: [25,5]
+                azimuth_ap: [155,5]           
+                pdcn_ap: 30 #100  #354*0.14 
+                zeta_ap: [0.0045,0.]    
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in W
+                i_err_rel: 0.01
+                i_err_min: 0.005
+                inverter_strings: [1,2,3]
+            WR_2:            
+                model: [power]
+                mount: roof
+                tilt_ap: [25,5]
+                azimuth_ap: [155,5]             
+                pdcn_ap: 30 #100  #354*0.14 
+                zeta_ap: [0.0045,0.]    
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in W    
+                i_err_rel: 0.01
+                i_err_min: 0.005
+                inverter_strings: [1,2,3]
+        input_data:
+            wind: 
+                mk_2018: cosmo #Windmast
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: None #Pyr026
+                mk_2019: Pyr053
+            temp_module: 
+                mk_2018: static_model #PVTemp_1
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr026 #cosmo 
+                mk_2019: Pyr053 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    
+    PV_14:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-27]#,2018-09-30,2018-10-04,2018-10-05,
+            #2018-10-08,2018-10-12,2018-10-13,2018-10-14] #,2018-09-17,2018-09-20,2018-10-10,
+            mk_2019: [2019-06-24,2019-06-28,2019-06-29,
+            2019-06-30,2019-07-04,2019-07-23,2019-07-24]
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof_open
+                tilt_ap: [25,5]
+                azimuth_ap: [166,5]
+                pdcn_ap: 28.66 #30  #354*0.14    
+                zeta_ap: [0.005,0.] 
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo #Windmast
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr025
+                mk_2019: Pyr087
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr025 #cosmo 
+                mk_2019: Pyr087 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_15:        
+        calibration_days:
+            mk_2018: [2018-09-12,2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05,
+            2018-10-10,2018-10-12,2018-10-13,2018-10-14] #2018-09-17,2018-10-08,
+            mk_2019: [2019-07-04,2019-07-23,2019-07-24]
+        substat: 
+            egrid:
+                model: [power]
+                mount: roof
+                tilt_ap: [11,5]
+                azimuth_ap: [231,5]
+                pdcn_ap: 47.29 #50  #354*0.14   
+                zeta_ap: [0.00457,0.]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+                area: 379.162 
+                #p_dc_nom: 49.01
+        input_data:
+            wind: 
+                mk_2018: cosmo #Windmast
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr044
+                mk_2019: Pyr035
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr044 #cosmo
+                mk_2019: Pyr035 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_16:     
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-17,2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05,
+            2018-10-08,2018-10-10,2018-10-12,2018-10-13,2018-10-14] #,,,   
+            mk_2019: [2019-06-24,2019-06-25,2019-06-26,2019-06-28,
+            2019-06-29,2019-07-04,2019-07-23]
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof
+                tilt_ap: [20,5]
+                azimuth_ap: [142,5]
+                pdcn_ap: 16.12 #20  #354*0.14
+                zeta_ap: [0.0045,0.05]
+                p_err_rel: 0.01 #Relative error in power measurement    
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo #Windmast
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr038
+                mk_2019: Pyr026
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr038 #cosmo
+                mk_2019: Pyr026 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_17:        
+        calibration_days: 
+            mk_2018: [] #,
+            mk_2019: [2019-06-24,2019-06-28,2019-06-29,2019-06-30,
+                    2019-07-23,2019-07-24,2019-08-09]
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof
+                tilt_ap: [20,5]
+                azimuth_ap: [159,5]
+                pdcn_ap: 30  #354*0.14
+                zeta_ap: [0.0045,0.05]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                #mk_2018: cosmo #Windmast
+                mk_2019: cosmo
+            irrad: 
+                #mk_2018: Pyr087
+                mk_2019: Pyr014
+            temp_module: 
+                #mk_2018: None
+                mk_2019: static_model
+            temp_amb: 
+                #mk_2018: Pyr087 #cosmo 
+                mk_2019: Pyr014 #cosmo
+            longwave:
+                #mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_18:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-17,2018-09-20,2018-09-27,
+           2018-10-12,2018-10-13,2018-10-14] # ,2018-09-30 ,2018-10-04,2018-10-05, 2018-10-08,2018-10-10
+            mk_2019: [2019-06-25,2019-06-26,2019-06-28,2019-06-29,
+            2019-06-30,2019-07-04,2019-07-23,2019-07-24]
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof
+                tilt_ap: [20,5]
+                azimuth_ap: [203,5]
+                pdcn_ap: 20  #354*0.14    
+                zeta_ap: [0.0045,0.05]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo #Windmast
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr060
+                mk_2019: Pyr010
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr060 #cosmo 
+                mk_2019: Pyr010 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_19:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05,
+            2018-10-10,2018-10-12,2018-10-13,2018-10-14] #,2018-09-17,2018-10-08,
+            mk_2019: [2019-07-23]
+        substat: 
+            egrid:
+                model: [power]
+                mount: roof
+                tilt_ap: [21,5]
+                azimuth_ap: [142,5]
+                pdcn_ap: 7.34 #5  #354*0.14  
+                zeta_ap: [0.0045,0.05]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo #Windmast
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr086
+                mk_2019: Pyr043
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr086 #cosmo 
+                mk_2019: Pyr043 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                
+    PV_21:     
+        calibration_days: #Leave out 2018 due to shadowing!
+            mk_2018: [] #2018-09-12,2018-09-17,2018-09-20,2018-09-27,2018-09-30]#,
+            #2018-10-08,2018-10-10,2018-10-12,2018-10-13,2018-10-14] #,2018-10-04,2018-10-05,
+            mk_2019: [2019-06-25,2019-06-26,2019-06-28,2019-06-29,2019-07-04,2019-07-23,2019-07-24]
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof
+                tilt_ap: [20,5]
+                azimuth_ap: [187,5]
+                pdcn_ap: 38.62 #30  #354*0.14 
+                zeta_ap: [0.0045,0.05]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo #Windmast
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr032
+                mk_2019: Pyr047
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr032 #cosmo 
+                mk_2019: Pyr047 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+    PV_22:        
+        calibration_days: 
+            mk_2018: [2018-09-12,2018-09-17,2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05,
+            2018-10-08,2018-10-10,2018-10-12,2018-10-13,2018-10-14] 
+            mk_2019: [2019-06-25,2019-06-26,2019-06-27,2019-06-29,2019-06-30,2019-07-23]
+        substat: 
+            auew_1:
+                model: [power]
+                mount: roof
+                tilt_ap: [22,5]
+                azimuth_ap: [183,5]
+                pdcn_ap: 33.44 #30  #354*0.14      
+                zeta_ap: [0.0043,0.0]
+                p_err_rel: 0.01 #Relative error in power measurement
+                p_err_min: 100 #Minimum power measurement error in Watt
+        input_data:
+            wind: 
+                mk_2018: cosmo #Windmast
+                mk_2019: cosmo
+            irrad: 
+                mk_2018: Pyr033
+                mk_2019: Pyr032
+            temp_module: 
+                mk_2018: static_model
+                mk_2019: static_model
+            temp_amb: 
+                mk_2018: Pyr033 #cosmo 
+                mk_2019: Pyr032 #cosmo
+            longwave:
+                mk_2018: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+                mk_2019: [MS_01,mordor,Etotdownlw_CGR4_Wm2]
+        
+#Surface data source, can be measured or cosmo
+surface_data: cosmo
+
+#If there is longwave emission data for temperature modelling
+longwave_data: True
+
+atm_emissivity: 1.
+
+spectral_mismatch_lut:
+    clear_sky: MetPVNet/Data/Water_Vapour_LUT/MS02/clear_sky
+
+#If true then run cosmo2pvcal
+#If false then cosmo2pvca has already been run and data will just be read out
+cosmo_sim: False
+
+cosmo_errors:
+    temp: [2,"abs"]
+    wind: [0.05,"rel"]
+    
+meas_errors:
+    t_mod: [1,"abs"]
+    g_lw: [0.02,"rel"]
+    
+# Cosmo path
+cosmopvcal_configfile: 
+    mk_2018: MetPVNet/Code/Current/pvcal/config_COSMO2PVCALinput_2018_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+    mk_2019: MetPVNet/Code/Current/pvcal/config_COSMO2PVCALinput_2019_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+
+# SZA range to use
+sza_max:
+    disort: 80.0
+    mystic: 90.0
+
+#Optical constants
+optics:    
+    kappa: 4 #extinction coefficient (m^-1)
+    L: 0.002 #glazing thickness (m)
+    flag: True
+
+#Choose temperature model: Tamizhmani, King, Faiman, or Measured
+T_model: 
+    model: Tamizhmani #Faiman #Barry #Faiman #King # #
+    type: static #dynamic
+
+T_model_mount_type:
+    open: MS_02
+    roof: PV_11_2019
+    roof_open: MS_02 
+
+#Choose efficiency model: Evans, Beyer, onediode
+eff_model: Evans #Beyer #Beyer
+
+#apriori values for inversion
+inversion:
+    power_model: Buchmann
+    #a-priori values, with percentage error
+    n_ap: [1.526,0.01]#5]    #For n we have to take a small error!!
+    n_diff: 0.01 #Increment for differentiation wrt n
+    pdcn_ap_err: 0.05
+    temp_model:
+        Tamizhmani:                      
+            u0_ap: [0.926,0.2]
+            u1_ap: [0.03,0.2] #0.2] #2]
+            u2_ap: [-1.66,0.2]
+            u3_ap: [5.1,0.2]
+        King:
+            a_ap: [-3.0,0.2]
+            b_ap: [-0.05,0.2]
+            dT_ap: [3,0.2]
+        Faiman:
+            u1_ap: [35.,0.2]
+            u2_ap: [3.,0.2]
+            u3_ap: [0.25,0.2]
+        Barry: 
+            dynamic:
+                open:
+                    u1_ap: [26.774955,0.050586]
+                    u2_ap: [4.354595,0.034020]
+                    u3_ap: [0.207342,0.001351]
+                    tau_ap: [588.768703,2.931172]
+                roof: 
+                    u1_ap: [31.156551,0.119147]
+                    u2_ap: [3.652608,0.042277]
+                    u3_ap: [0.157707,0.001591]
+                    tau_ap: [547.412434,5.197343]
+            static:
+                open:
+                    u1_ap: [35.044841,0.062564]
+                    u2_ap: [2.957837,0.037900]
+                    u3_ap: [0.037394,0.001189]
+                roof:
+                    u1_ap: [37.360,0.110]
+                    u2_ap: [2.782,0.038]
+                    u3_ap: [0.063,0.002]
+    eff_model:
+        Beyer:
+            a1_ap: [1.0,0.2]
+            a2_ap: [0.03,0.2]
+            a3_ap: [0.12,0.2]
+        Ransome:
+            c3_ap: [-0.2,0.2]
+            c6_ap: [0.,0.]
+    #Hard constraints
+    n_range: [1.1,1.7]
+    theta_range: [0,90]
+    #Algorithm parameters
+    max_iterations: 50
+    gamma: 
+        initial_value: 1.0
+        factor: 5.0
+    convergence_limit: 
+        disort: 0.05
+        mystic: 0.00001
+    #method: lm #gn #lm #gn # gn = Gauss-Newton , lm = Levenberg-Marquardt
+
+results_path: 
+    main: MetPVNet/Results/PVCAL/
+    temp_model: MetPVNet/Results/PVTEMP/
+    plots: Fit_Plots
+
+#Huld model
+#k1_ap = -0.017237
+#k2_ap = -0.040465
+#k3_ap = -0.004702
+#k4_ap = 0.000149
+#k5_ap = 0.000170
+#k6_ap = 0.000005
+#U0_ap = 26.9
+#U1_ap = 23.4

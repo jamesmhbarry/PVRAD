@@ -1,0 +1,24 @@
+Metadata-Version: 2.1
+Name: pvstationdataprocess
+Version: 0.0.1
+Summary: Import measurement data from PV power stations
+Home-page: UNKNOWN
+Author: James Barry
+Author-email: 
+License: UNKNOWN
+Description: # pvdataprocess
+        
+        to install run:
+        ```
+        pip install -e .
+        ```
+        
+        Then run:
+        ```
+        pvdataprocess -h
+        ```
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: MIT License
+Description-Content-Type: text/markdown

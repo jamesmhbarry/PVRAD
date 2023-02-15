@@ -1,0 +1,24 @@
+Metadata-Version: 2.1
+Name: cosmopvcal
+Version: 0.0.1
+Summary: extract surface properties from cosmo file for use in pv model calibration
+Home-page: UNKNOWN
+Author: James Barry
+Author-email: 
+License: UNKNOWN
+Description: # cosmopvcal
+        
+        to install run:
+        ```
+        pip install -e .
+        ```
+        
+        Then run:
+        ```
+        cosmo2pvcal -h
+        ```
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: MIT License
+Description-Content-Type: text/markdown

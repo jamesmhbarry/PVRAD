@@ -1,0 +1,82 @@
+# config file to create radiosonde files from COSMO data to perform Mystic simulations
+
+# which output should be generated options: radiosonde, atmofile
+output_filetype: atmofile
+
+# path where COSMO netCDF data files are located
+path_cosmo: /home/james/MetPVNet/Data/COSMO/raw_data/cosmo_kampagne_2018_all_new
+
+# list of COSMO filenames
+#fnames_cosmo: [cosmo_d2_20180912.nc,cosmo_d2_20180917.nc,cosmo_d2_20180920.nc, 
+#            cosmo_d2_20180927.nc,cosmo_d2_20180930.nc,cosmo_d2_20181004.nc,
+#            cosmo_d2_20181005.nc,cosmo_d2_20181008.nc,cosmo_d2_20181010.nc,
+#            cosmo_d2_20181012.nc,cosmo_d2_20181013.nc,cosmo_d2_20181014.nc]
+            
+# list of COSMO filenames
+fnames_cosmo: from_dates
+
+dates: [[2018-09-05,2018-10-15]]
+
+# path where the (main directories of) radiosonde/atmosphere files will be saved
+path_radiosondefiles: /home/james/MetPVNet/Data/COSMO/libradtran_input_radsnde
+path_atmofiles: /home/james/MetPVNet/Data/COSMO/libradtran_input_atm/reduced_levels/cosmo_d2_2km
+
+# names of COSMO variables and dimensions
+variable_names_cosmo:
+    pressure_lev: pres_generalVerticalLayer #P_generalVerticalLayer
+    Temperature_lev: t_generalVerticalLayer #T_generalVerticalLayer
+    humidity_lev: q #QV
+
+    pressure_sfc: sp #p #PS
+    Temperature_sfc: 2t #T_2M
+    humidity_sfc: 2r #RELHUM_2M
+
+    time: time
+    lat: lat
+    lon: lon
+    
+    level_alt: HHL
+
+# path, fname, variable names us standard atmosphere
+path_usstd: /home/james/libRadtran-2.0.2/data/atmmod
+fname_usstd: afglus.dat
+variable_names_usstd: [z, p, T, air, O3, O2, H2O, CO2, NO2]
+
+# timeresolution in minutes, if None: timeresolution equal to resolution of COSMO data
+timeresolution: 15.
+
+# reduce vertical resoloution to achieve better performance of Mystic
+reduce_vertical_resolution: True
+
+# modify Ozone concentration in Atmosphere file. use False if you dont want to change anything,
+# provide the desired Ozone column in Dobson units (DU) if you want to change the concentration
+modify_ozone: False 
+
+# latitude, longitude of locations (position of solar power plants) within the COSMO grid
+stations_lat_lon:
+    MS_01: [47.715877,10.314037]
+    MS_02: [47.683233,10.319028]
+    PV_03: [47.76754,10.39832]
+    PV_04: [47.76683,10.40843]
+    PV_11: [47.653161,10.496584]
+    PV_12: [47.640997,10.387674]
+    PV_15: [47.61811,10.49656]
+    PV_06: [47.75014,10.31668]
+    PV_07: [47.74298,10.23326]
+    PV_17: [47.59261,10.09873]
+    PV_16: [47.61035,10.22710]
+    PV_13: [47.64058,10.24982]
+    PV_10: [47.66487,10.11355]
+    PV_08: [47.71985,10.23064]
+    PV_09: [47.71785,10.31660]
+    PV_19: [47.54270,10.44595]
+    PV_18: [47.58829,10.23160]
+    PV_01: [47.79314,10.41914]
+    PV_22: [47.46471,10.26521]
+    PV_20: [47.54129,10.43964]
+    PV_21: [47.53019,10.25957]
+    PV_02: [47.76869,10.40038]
+    PV_14: [47.63978,10.11741]
+    PV_15: [47.61811,10.49656]    
+    PV_05: [47.76352,10.40331]
+  

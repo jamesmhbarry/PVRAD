@@ -1,0 +1,26 @@
+# config file for PV forward model calibration
+
+#Description of datasets for current simulation
+description: messkampagne_2019_all_sky
+
+#Configuration of raw data
+data_configfile: config_data_2019_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/    
+
+#Configuration of DISORT RT simulation
+rt_configfile: config_PVPYRCAL_RT_MetPVNet_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+
+#Configuration of pyranometers
+pyr_configfile: config_PYRCAL_inversion_2019_messkampagne.yaml #/home/james/MetPVNet/Code/pvcal/
+
+#Plot style
+plot_styles: 
+    single_small: my_paper
+    combo_small: my_paper_grid
+    single_large: my_presi
+    combo_large: my_presi_grid
+    
+plot_flags:     
+    compare: True #False #True #False #True #False #True #False #True 
+    scatter: True #False #True 
+    stats: True #True     
+    titles: True #False

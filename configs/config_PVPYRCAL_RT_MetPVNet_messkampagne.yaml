@@ -1,0 +1,176 @@
+#Config file for radiative transport simulation, input for PV calibration
+
+simulation_source: [messkampagne_2018_clear_sky,messkampagne_2019_all_sky] #] # test_2017_clear_sky] #
+
+#Can be "all" or a list of stations
+stations: PV_12
+
+working_directory: MetPVNet/Data/libRadtran_files
+
+#Common_base
+common_base:
+    data_files_path: libRadtran-2.0.3/data
+    source: solar
+    mol_abs_param: kato2
+    output_process: sum
+    running_mode: quiet
+    wavelength: 
+        pv: [300.0,1200.0] #Give range or else write "all" for whole solar spectrum
+        pyranometer: all
+    aerosol: aerosol_default
+    aerosol_species_library: OPAC
+    aerosol_species_file: continental_average
+    
+#Configuration for DISORT simulation
+disort_base:    
+    rte_solver: disort
+    pseudospherical: True
+
+# Resolution of zenith and azimuth angles for DISORT in degrees    
+disort_rad_res: 
+    theta: 5
+    phi: 5
+    
+#Configuration for MYSTIC simulation
+mystic_base:    
+    rte_solver: mystic
+    mc_backward: True
+    mc_vroom: "on"      
+    mc_spherical: 1D        
+
+mystic_options:
+    edir:
+        mc_backward_output: edir
+        mc_photons: 1000 #100000
+    edn:
+        mc_backward_output: ednpv
+        mc_photons: 1.e6 #5.e6
+            
+#Timeresolution for the simulation
+timeres: '15min'    
+    
+#Maximum SZA to use for simulation
+sza_max: 
+    clear_sky: 90
+    lut: 80
+    cod_cutoff: 75
+    
+#Default atmosphere file
+atmosphere_file: libRadtran-2.0.3/data/atmmod/afglus.dat
+
+# Atmosphere configuration, either default or cosmo
+atmosphere: cosmo
+
+#If true then run cosmomystic
+#If false then cosmomystic has already been run and data will just be read out
+cosmo_sim: False
+
+# Cosmo path
+cosmo_configfile: 
+    mk_2017: MetPVNet/Code/Current/pvcal/config_COSMO2rtinput_2017_test.yaml    
+    mk_2018: MetPVNet/Code/Current/pvcal/config_COSMO2rtinput_2018_messkampagne.yaml    
+    mk_2019: MetPVNet/Code/Current/pvcal/config_COSMO2rtinput_2018_messkampagne.yaml    
+   
+# Aersol configuration
+aerosol:
+    #Source, either default or aeronet
+    source: aeronet
+    # Path and file name for aerosol files
+    configfile: 
+        mk_2017: MetPVNet/Code/Current/pvcal/config_aeronetmystic_2017_test.yaml        
+        mk_2018: MetPVNet/Code/Current/pvcal/config_aeronetmystic_2018_messkampagne.yaml        
+        mk_2019: MetPVNet/Code/Current/pvcal/config_aeronetmystic_2019_messkampagne.yaml        
+    station: KP
+#        mk_2017: LA
+#        mk_2018: KP #can be station name or list of names for average
+#        mk_2019: KP
+    data_res: all #can be all or day for average
+    #Distance in km above which to use only daily average aerosol properties
+    aeronet_distance_limit: 20
+    #Config for AOD LUT
+    lut_config:
+        wavelength: 500
+        samples: 16
+        range: [0.01,1.]
+    disort_rad_res:
+        theta: 10
+        phi: 10
+    ais_config:        
+        tau550: 0.5
+        step_size: 0.05
+        range: [0.0,1.0]
+        file: MetPVNet/Data/AIS/asl_imp_samp_input.dat
+
+#If true then run aeronetmystic        
+aeronet_sim: False
+
+# albedo corresponding to clear sky days
+albedo: 
+    choice: constant #MODIS #constant #choose "constant" or "MODIS"
+    constant: 0.2 #[0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]
+              #0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]
+    brdf_folder: MetPVNet/Data/MODIS/
+
+#Cloud details
+clouds:
+    inputs:
+        LWC: 0.28 #liquid water content
+        z0: 1 # Todo: Make it an array
+        zlevels: [10,9,8,7,6,5,4,3,2,1,0]
+        Reff: 7.33 #effective radius
+    wc_file: MetPVNet/Data/COSMO/cloud_files/cloudfile_disort_cod.dat
+    lut_config:
+        wavelength: 550
+        samples: 16
+        range: [0.5,150]
+    disort_rad_res:
+        theta: 10
+        phi: 10    
+
+# These are all days to be simulated, both clear and cloudy. (The latter for reference)
+# Can be a list of days or a list of lists with start and end date
+test_days: 
+    mk_2017:
+        all: [2017-02-14,2017-05-27,2017-08-07,2017-08-25,2017-10-15]
+    mk_2018: 
+        all: [[2018-09-05,2018-10-15]]
+        clear: [2018-09-12,2018-09-17,2018-09-20,2018-09-27,2018-09-30,2018-10-04,2018-10-05,
+            2018-10-08,2018-10-10,2018-10-12,2018-10-13,2018-10-14]               
+        falltage: [2018-09-15,2018-09-21,2018-10-01]
+    mk_2019: 
+        all: [[2019-06-25,2019-08-09]]
+        clear: [2019-06-26,2019-06-27,2019-06-28,2019-06-29,2019-06-30,
+                2019-07-04,2019-07-23,2019-07-24,2019-07-25] #2019-06-25,
+        falltage: [2019-07-19,2019-07-28,2019-07-31]
+
+#Folder to save disort simulation results
+save_path: 
+    disort: MetPVNet/Data/DISORT/
+    mystic: MetPVNet/Data/MYSTIC/
+    clear_sky: Clear_Sky
+    optical_depth_lut: OD_LUT    
+
+#Plotting flag - whether to generate plots
+plot_flag: False #True
+
+#Force simulation - if true simulation will always run, if false will look for old results
+#force_run_flag: True #False #True #False
+    
+#Thermal options
+thermal_options:
+    data_files_path: libRadtran-2.0.3/data
+    source: thermal
+    mol_abs_param: fu
+    output_process: sum
+    running_mode: quiet    
+    aerosol: aerosol_default    
+    rte_solver: mystic
+    mc_backward: True
+    mc_vroom: "on"  
+    mc_photons: 100000
+
+
+
+
+
+    

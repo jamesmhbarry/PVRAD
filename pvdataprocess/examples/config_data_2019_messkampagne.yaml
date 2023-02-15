@@ -1,0 +1,101 @@
+# config file for data processing script
+
+#Description of current simulation
+description: messkampagne_2019_all_sky
+
+#Table with configuration information 
+configtable: 20200130_MetPVNet_Anlagenuebersicht_v1.6_JB.xlsx
+
+# Path definitions, i.e. where the data is stored
+paths: 
+    mainpath: /mnt/bigdata/share/00_Projects/1_MetPVNet/Messkampagne/00_Messdaten/01_Messdaten_Kampagne_2019/
+    #AUEW data subfolders
+    auew: 
+        path: Leistungsmessung_AUEW
+    #Egrid data subfolders
+    egrid: 
+        path: Leistungsmessung_egrid
+    #DC and AC data from inverters
+    inverter:
+        path: eigene_Messung
+    temp:
+        path: PV-Modul_Temperatursensor
+    wind:
+        path: Windmessmast
+    pmaxdoas:
+        path: [] #[PMAX-DOAS,general]
+    #Folders to save plots
+    plots:
+        main: MetPVNet/Data/Messkampagne/Plots
+        pv: PV
+        rad: Irrad
+        temp: Temp
+        combo: Combo
+    savedata:
+        main: MetPVNet/Data/Messkampagne
+        #Folder to save binary data
+        binary: Pickled_Data
+        #Folder to save CSV data
+        csv: CSV_Data
+    
+data_types: [pv,irrad,temp,wind]
+    
+data_processing:
+    auew:
+        time_integral: 15
+        units: minutes
+    module_temp:
+        MS_02:
+            flag: False
+            slope: 0 #8.90263884259304e-05
+            start_time: '' #2018-09-06 10:00:00' 
+        PV_12:
+            flag: False 
+            slope: 0 #7.0862340896255e-05
+            start_time: '' #2018-09-06 10:00:00'
+        PV_11:
+            flag: False
+    substat_switch:
+        MS_02:
+            old_name: auew_1
+            new_name: auew_2
+        PV_06:
+            old_name: auew_1
+            new_name: auew_2        
+        PV_11:
+            old_name: egrid
+            new_name: egrid_2
+    inverters:
+        MS_02: 
+            names: [WR_1,WR_2,WR_3]
+            phases: 3
+        PV_13: 
+            names: [WR_1,WR_2,WR_3,WR_4,WR_5,WR_6,WR_7,WR_8,WR_9]
+            phases: 1
+
+time_resolution: [15S,1min,15min] 
+
+resample: True
+    
+#stations to import, can be "all" or a list of station names, i.e. "MS_01", PV_05" etc
+stations: MS_02 #[MS_02,PV_03,PV_04,PV_06,PV_07,PV_08,PV_09,PV_10,PV_11,PV_12,PV_14,PV_15,PV_16,PV_18,PV_19,PV_21,PV_22] #,pv_07,PV_10,PV_14]
+#stations: PV_13 #2 #MS_01 #all #PV_09 #all #MS_02 #PV_12 #all #[PV_06,PV_08,PV_09,PV_10,PV_11,PV_12,PV_13,PV_14,PV_15,PV_16,PV_17,PV_18,PV_19,PV_20,PV_21,PV_22] #[MS_01,MS_02,PV_01,PV_02,PV_04,PV_06,PV_07,PV_08,PV_10,PV_11,PV_12,PV_13,PV_14,PV_15,PV_16,PV_17,PV_18,PV_19,PV_20,PV_21,PV_22] 
+
+# Plotting flags - turn plotting on and off
+plot_flags:
+    pv: False #True #False #True 
+    irrad: False #True #False #True #False 
+    temp: False #True #True
+    combo_p_rad: False #True #False #True #False #True #False #True #True #False #True #False #True #True #False
+    combo_p_temp: False #True #False #True #False #True
+    
+save_flag:
+    raw: True #False #True #True #False #True #False #True
+    resampled: True #False #True #True #False #True #False
+    
+#Plot style
+plot_styles: 
+    single_small: my_paper
+    combo_small: my_paper_grid
+    single_large: my_presi
+    combo_large: my_presi_grid

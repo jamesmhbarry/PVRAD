@@ -1,0 +1,10 @@
+#Config file for PV data preprocessing
+
+#Path for AUEW Excel sheet
+auew_data: /mnt/bigdata/00_Projects/1_MetPVNet/Messkampagne/00_Messdaten/01_Messdaten_2019/AN_Messdaten_Kampange2.xlsx
+
+#Define path where CSV files should be saved
+savepath: /media/bigdata/00_Projects/1_MetPVNet/Messkampagne/00_Messdaten/01_Messdaten_Kampagne_2019/
+
+#Define path where egrid files are
+egrid_path: /media/bigdata/00_Projects/1_MetPVNet/Messkampagne/00_Messdaten/01_Messdaten_Kampagne_2019/

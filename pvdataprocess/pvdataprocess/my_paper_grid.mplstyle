@@ -1,0 +1,12 @@
+font.size : 14
+legend.fontsize : 14
+axes.grid : True
+axes.titlesize : 18
+axes.labelsize : 16
+xtick.labelsize : 14
+ytick.labelsize : 14
+
+figure.figsize : 10, 9
+#figure.constrained_layout.use: True
+#figure.autolayout : True
+

@@ -1,0 +1,3 @@
+[console_scripts]
+aeronet2mystic = aeronetmystic.pvcal_aerosol_input:main
+

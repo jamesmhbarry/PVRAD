@@ -1,0 +1,80 @@
+# config file for aeronet import program
+    
+#Description of data
+description: messkampagne_2018_clear_sky
+
+# Path for aerosol files
+path_aerosol_data: MetPVNet/Data/Aeronet/raw_data/
+
+# Path to save aerosol data and fits
+path_fit_data: MetPVNet/Data/Aeronet/fit_data/
+
+# Plot path
+path_plots: 
+    main: MetPVNet/Data/Aeronet/Plots/
+    raw: raw_data
+    fits: Angstrom_Fits
+
+# Details of aeronet stations
+aeronet_stations:
+    KP:
+        name: Kempten
+        lat_lon: [47.71583,10.31413]
+        altitude: 718.0
+        aod_files:
+            all: 20180901_20181031_KEMPTEN_UAS.lev20
+            day_ave: 20180901_20181031_KEMPTEN_UAS_ave_day.lev20            
+            version: 3
+        ssa_files:
+            all: 20180901_20181031_KEMPTEN_UAS.ssa
+            day_ave: 20180901_20181031_KEMPTEN_UAS_ave_day.ssa
+            version: 3
+    # HP:
+    #     name: Hohenpeissenberg        
+    #     lat_lon: [47.80190,11.01190] 
+    #     altitude: 989.7
+    #     aod_files:
+    #         all: 180901_181031_HohenpeissenbergDWD.lev15
+    #         day_ave: 180901_181031_HohenpeissenbergDWD_ave_day.lev15
+    #         version: 2
+    #     ssa_files: 
+    #         all: 180901_181031_HohenpeissenbergDWD.ssa
+    #         day_ave: 180901_181031_HohenpeissenbergDWD_ave_day.ssa
+    #         version: 2
+    # LA:
+    #     name: Laegeren        
+    #     lat_lon: [47.47835,8.36435]
+    #     altitude: 763.0
+    #     aod_files:
+    #         all: 20180901_20181031_Laegeren.lev15
+    #         day_ave: 20180901_20181031_Laegeren_ave_day.lev15
+    #         version: 3
+    #     ssa_files: 
+    #         all: 20180901_20181031_Laegeren.ssa
+    #         day_ave: 20180901_20181031_Laegeren_ave_day.ssa
+    #         version: 3
+        
+# Choose whether to calculate mean and which stations to use, i.e. [KP,MU]
+mean_stations: KP
+        
+#Wavelength range for fitting
+fit_range: [300.0,1200.0]
+
+#Choose whether to fit all values or just daily averages
+fit_config:
+    day_ave: True
+    all: True
+
+#Time resolution for interpolation in minutes
+timeres: 15
+
+# Plot flag
+plot_flag: 
+    day_ave: True
+    all: False
+
+#Pad values - fills up the values with nan
+pad_values: True #False
+    
+#Whether to consider quadratic term or not
+curvature: False #True        
