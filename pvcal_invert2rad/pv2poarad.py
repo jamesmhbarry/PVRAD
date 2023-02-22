@@ -2217,40 +2217,42 @@ def save_results(key,pv_station,substat_type,pvrad_config,pvcal_config,rt_config
         print('Results written to file %s\n' % filename_csv) 
         
     for measurement in pvrad_config["inversion_source"]:
-        year = measurement.split('_')[1]  
-    
-        #Write all results to CSV file
-        filename_csv = f'tilted_irradiance_cloud_fraction_{key}_{timeres}_{year}.dat'
-        f = open(os.path.join(path,filename_csv), 'w')
-        f.write('#Station: %s, Irradiance data and cloud fraction from DISORT calibration/simulation\n' % key)    
-        f.write('#Tilted irradiance and cloud fraction inferred from %s\n' % substat_type)
-        f.write('#Results up to maximum SZA of %d degrees\n' % sza_limit)
-        if inv_model == "power":
-            f.write('#PV model: %s, efficiency model: %s, temperature model: %s\n' % (model,eff_model,T_model))        
-        elif inv_model == "current":
-            f.write('#PV model: %s, temperature model: %s\n' % (model,T_model))        
-        for substat in pv_station["substations"][substat_type]["data"]:                
-            ap_pars = pv_station["substations"][substat_type]["data"][substat]["ap_pars"]
-            f.write('#A-priori parameters (value,error):\n')
-            for par in ap_pars:
-                f.write('#%s: %g (%g)\n' % par)                        
-            if "opt_pars" in pv_station["substations"][substat_type]["data"][substat]:
-                opt_pars = pv_station["substations"][substat_type]["data"][substat]["opt_pars"]
-                f.write('#Optimisation parameters (value,error):\n')
-                for par in opt_pars:
-                    f.write('#%s: %g (%g)\n' % par)     
-            else:
-                f.write('No solution found by the optimisation routine, using a-priori values\n')
-
-        f.write('\n#Multi-index: first line ("variable") refers to measured quantity\n')
-        f.write('#second line ("substat") refers to measurement device\n')
-        f.write('#First column is the time stamp, in the format %Y-%m-%d %HH:%MM:%SS\n')
-        f.write('\n')                       
+        year = measurement.split('_')[1] 
+        if f"mk_{year}" in pv_station['substations'][substat_type]["source"]:
+            dfname = f'df_{year}_{timeres}'        
         
-        dataframe.loc[:,pd.IndexSlice[:,[substat,"sun"]]].to_csv(f,sep=';',float_format='%.6f',
-                          na_rep='nan')
-        f.close()    
-        print('Results written to file %s\n' % filename_csv)             
+            #Write all results to CSV file
+            filename_csv = f'tilted_irradiance_cloud_fraction_{key}_{timeres}_{year}.dat'
+            f = open(os.path.join(path,filename_csv), 'w')
+            f.write('#Station: %s, Irradiance data and cloud fraction from DISORT calibration/simulation, %s\n' % (key,year))    
+            f.write('#Tilted irradiance and cloud fraction inferred from %s\n' % substat_type)
+            f.write('#Results up to maximum SZA of %d degrees\n' % sza_limit)
+            if inv_model == "power":
+                f.write('#PV model: %s, efficiency model: %s, temperature model: %s\n' % (model,eff_model,T_model))        
+            elif inv_model == "current":
+                f.write('#PV model: %s, temperature model: %s\n' % (model,T_model))        
+            for substat in pv_station["substations"][substat_type]["data"]:                
+                ap_pars = pv_station["substations"][substat_type]["data"][substat]["ap_pars"]
+                f.write('#A-priori parameters (value,error):\n')
+                for par in ap_pars:
+                    f.write('#%s: %g (%g)\n' % par)                        
+                if "opt_pars" in pv_station["substations"][substat_type]["data"][substat]:
+                    opt_pars = pv_station["substations"][substat_type]["data"][substat]["opt_pars"]
+                    f.write('#Optimisation parameters (value,error):\n')
+                    for par in opt_pars:
+                        f.write('#%s: %g (%g)\n' % par)     
+                else:
+                    f.write('No solution found by the optimisation routine, using a-priori values\n')
+    
+            f.write('\n#Multi-index: first line ("variable") refers to measured quantity\n')
+            f.write('#second line ("substat") refers to measurement device\n')
+            f.write('#First column is the time stamp, in the format %Y-%m-%d %HH:%MM:%SS\n')
+            f.write('\n')                       
+                    
+            pv_station[dfname].loc[:,pd.IndexSlice[:,[substat,"sun"]]].to_csv(f,sep=';',float_format='%.6f',
+                              na_rep='nan')
+            f.close()    
+            print('Results written to file %s\n' % filename_csv)             
 
 #%%Main Program
 #######################################################################
