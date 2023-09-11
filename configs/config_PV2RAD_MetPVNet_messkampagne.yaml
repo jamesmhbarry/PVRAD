@@ -31,8 +31,8 @@ plot_styles:
     combo_large: my_presi_grid
     
 plot_flags:         
-    compare: False #True #äFalse #True #True #False #True 
-    scatter: True #False #True #False #True #False #True 
+    compare: False #True 
+    scatter: False #True #False #True #False #True 
     spectral: False ##True
     stats: False #True #True 
     combo_stats: True #False #True #False #True #False #True    

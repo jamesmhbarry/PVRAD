@@ -32,9 +32,9 @@ plot_styles:
 plot_flags:     
     lut: False # True 
     compare: False #True #True #False #True 
-    scatter: False #True #False #True 
-    stats: True #True 
-    combo_stats: True
+    scatter: False #True 
+    stats: False #True #True 
+    combo_stats: False #True
     titles: False
 
 #Define the window size for moving average, for comparison with satellite and weather data    
