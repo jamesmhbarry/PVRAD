@@ -663,7 +663,7 @@ def mul_lists(l1,l2):
     """
     return sum([l1[i]*l2[i] for i in range(len(l1))])
     
-def prepare_inversion_data(mkname,dataframe,data_source,substat_inv,T_model):
+def prepare_inversion_data(mkname,dataframe,data_source,error_days,substat_inv,T_model):
     """
     Prepare dataframe for inversion depending on source config
     Check for NaNs
@@ -674,6 +674,7 @@ def prepare_inversion_data(mkname,dataframe,data_source,substat_inv,T_model):
     :param mkname: name of measurement campaign
     :param dataframe: dataframe for inversion "df_sim_"
     :param data_source: dictionary with config for data sources
+    :param error_days: list of days to leave out due to errors
     :param substat_inv: substation to use for inversion
     :param T_model: string, temperature model to use for inversion
     
@@ -683,6 +684,14 @@ def prepare_inversion_data(mkname,dataframe,data_source,substat_inv,T_model):
             
     #Find all valid power values
     notnan_index_P = dataframe.loc[dataframe[('P_meas_W',substat_inv)].notna()].index    
+    
+    error_days_index = pd.DatetimeIndex(error_days)
+    notnan_index_P = notnan_index_P[~np.isin(pd.to_datetime(notnan_index_P.date),
+                         error_days_index)]
+    
+    if error_days:
+        for day in error_days:
+            print(f'Removing data from {day}')
     
     notnan_index_chi = dataframe.loc[dataframe[("chi_spec_fit",substat_inv)].notna()].index
     
@@ -1565,8 +1574,14 @@ def etotpoa_power_model(station,pv_station,dfname,substat_inv,year,pvcal_config,
     else:
         T_mod_dict = {}
     
+    #Remove days with errors
+    if 'error_days' in pvrad_config["pv_stations"][station][substat_type]["data"][substat_inv]:
+        error_days = pvrad_config["pv_stations"][station][substat_type]["data"][substat_inv]["error_days"][year]
+    else: 
+        error_days = []
+    
     #Get rid of NaNs in power, temperature, wind            
-    notnan_index = prepare_inversion_data(year,pv_station[dfname],data_source,
+    notnan_index = prepare_inversion_data(year,pv_station[dfname],data_source,error_days,
                                       substat_inv,T_model) 
     
     dataframe = pv_station[dfname].loc[notnan_index]
@@ -1998,6 +2013,62 @@ def cloud_fraction(dataframe_sim,dataframe,substat_inv,year,substat_pars,
     
     return dataframe_sim, dataframe
 
+def cosine_bias_correction(dataframe,stat_config,coeff_poly):
+    """
+    Correct the small pyranometers from TROPOS for cosine bias using
+    polynomial correction factor calculated by Jonas Witthuhn, but only
+    apply it when conditions are clear (cloud fraction = 0)
+
+    Parameters
+    ----------
+    dataframe : pandas dataframe with all data including sun position in degrees
+    stat_config : dictionary with stations configuration including angles in radians
+    coeff_poly : dictionary with coefficients for correction
+
+    Returns
+    -------
+    dataframe : new dataframe with corrected irradiance values
+
+    """
+        
+    #GTI bias correction
+    radname = stat_config["name"]
+    
+    if ("cloud_fraction_poa",substat) in dataframe.columns:
+        #Find clear sky periods
+        cf_poa_mask = dataframe[("cloud_fraction_poa",substat)] == 0
+        
+        if "opt_pars" not in stat_config:
+            mu_IA = cos_incident_angle(np.deg2rad(dataframe.loc[cf_poa_mask,("sza","sun")].values), 
+                azi_shift(np.deg2rad(dataframe.loc[cf_poa_mask,("phi0","sun")].values)),
+                  stat_config["ap_pars"][0][1],azi_shift(stat_config["ap_pars"][1][1]))
+        else:
+            mu_IA = cos_incident_angle(np.deg2rad(dataframe.loc[cf_poa_mask,("sza","sun")].values), 
+                azi_shift(np.deg2rad(dataframe.loc[cf_poa_mask,("phi0","sun")].values)),
+                  stat_config["opt_pars"][0][1],azi_shift(stat_config["opt_pars"][1][1]))
+        
+        C_GTI = coeff_poly["c_0"]*mu_IA**3 + coeff_poly["c_1"]*mu_IA**2\
+            + coeff_poly["c_2"]*mu_IA + coeff_poly["c_3"]
+        
+        dataframe.loc[cf_poa_mask,(radname,substat)] = \
+        dataframe.loc[cf_poa_mask,(radname,substat)]*C_GTI
+    
+    #GHI bias correction
+    radname = stat_config["name"].replace("poa","down")
+    
+    if ("cloud_fraction_down",substat) in dataframe.columns:
+        cf_down_mask = dataframe[("cloud_fraction_down",substat)] == 0
+        
+        mu0 = np.cos(np.deg2rad(dataframe.loc[cf_down_mask,("sza","sun")].values))
+        
+        C_GHI = coeff_poly["c_0"]*mu0**3 + coeff_poly["c_1"]*mu0**2\
+            + coeff_poly["c_2"]*mu0 + coeff_poly["c_3"]
+        
+        dataframe.loc[cf_down_mask,(radname,substat)] = \
+        dataframe.loc[cf_down_mask,(radname,substat)]*C_GHI                               
+                               
+    return dataframe   
+
 def generate_folders(inv_model,rt_config,pvcal_config,pvrad_config,home):
     """
     Generate folders for results
@@ -2186,7 +2257,7 @@ def save_results(key,pv_station,substat_type,pvrad_config,pvcal_config,rt_config
         filename_csv = 'tilted_irradiance_cloud_fraction_' + key + '_' +\
              substat_type + '_' + day.strftime('%Y-%m-%d') + '.dat'
             
-        f = open(os.path.join(path,filename_csv), 'w')
+        f = open(os.path.join(path,"CSV_Results",filename_csv), 'w')
         f.write('#Station: %s, Irradiance data and cloud fraction from DISORT calibration/simulation\n' % key)    
         f.write('#Tilted irradiance and cloud fraction inferred from %s\n' % substat_type)
         f.write('#Results up to maximum SZA of %d degrees\n' % sza_limit)
@@ -2223,7 +2294,7 @@ def save_results(key,pv_station,substat_type,pvrad_config,pvcal_config,rt_config
         
             #Write all results to CSV file
             filename_csv = f'tilted_irradiance_cloud_fraction_{key}_{timeres}_{year}.dat'
-            f = open(os.path.join(path,filename_csv), 'w')
+            f = open(os.path.join(path,"CSV_Results",filename_csv), 'w')
             f.write('#Station: %s, Irradiance data and cloud fraction from DISORT calibration/simulation, %s\n' % (key,year))    
             f.write('#Tilted irradiance and cloud fraction inferred from %s\n' % substat_type)
             f.write('#Results up to maximum SZA of %d degrees\n' % sza_limit)
@@ -2297,7 +2368,7 @@ if args.station:
         stations = 'all'
 else:
     #Stations for which to perform inversion
-    stations = "PV_12" #"MS_02" #pvrad_config["stations"]
+    stations = "PV_11" #"MS_02" #pvrad_config["stations"]
 
 #Choose measurement campaign
 if args.campaign:
@@ -2334,10 +2405,16 @@ for key in pvsys:
     for substat_type in pvrad_config["pv_stations"][key]:
         #if "p_ac" in substat_type:
         for substat in pvsys[key]['substations']:
-            if substat in pvrad_config["pv_stations"][key][substat_type]["data"]:                
+            if substat in pvrad_config["pv_stations"][key][substat_type]["data"]:     
+                if "error_days" in pvrad_config["pv_stations"][key][substat_type]["data"]\
+                [substat]:
+                    pvsys[key]['substations'][substat]["error_days"] = \
+                    pvrad_config["pv_stations"][key][substat_type]["data"][substat]["error_days"]
+                    
                 pvrad_config["pv_stations"][key][substat_type]["data"]\
                 [substat] = merge_two_dicts(pvrad_config["pv_stations"][key][substat_type]["data"]\
                 [substat],pvsys[key]['substations'][substat])        
+                
                     
     #Load substation config
     pvsys[key]['substations'] = pvrad_config["pv_stations"][key]
@@ -2362,8 +2439,8 @@ for key in pvsys:
         
         print(f"Inverting power onto tilted irradiance using {model_type} data")
         print(f"Using {pvcal_config['inversion']['power_model']}, {pvcal_config['T_model']['type']}, "\
-              f"{pvcal_config['T_model']['model']}, {pvcal_config['eff_model']} model")            
-    
+              f"{pvcal_config['T_model']['model']}, {pvcal_config['eff_model']} model")       
+                    
         for measurement in pvrad_config["inversion_source"]:
             year = "mk_" + measurement.split('_')[1]  
             #If there is data for this year, perform inversion
@@ -2392,8 +2469,8 @@ for key in pvsys:
                 # dfs = []
                 # for day in pvrad_config["falltage"][year]:
                 #     dfs.append(pvsys[key][dfname].loc[day.strftime('%Y-%m-%d')])
-                # pvsys[key][dfname] = pd.concat(dfs,axis=0)                                    
-                    
+                # pvsys[key][dfname] = pd.concat(dfs,axis=0)     
+                            
                 #Throw away night time values
                 print('Calculating sun position, keep only values up to SZA = %d degrees' % sza_limit)
                 pvsys[key][dfname] = get_sun_position(pvsys[key],dfname,sza_limit)                        
@@ -2436,6 +2513,16 @@ for key in pvsys:
                     pvsys[key][dfsim], pvsys[key][dfname] = \
                         cloud_fraction(pvsys[key][dfsim],pvsys[key][dfname],\
                         substat,year,substat_pars,const_opt,angle_arrays,cs_threshold)
+                            
+                #Make sure pyranometer data is bias corrected for validation
+                pyrcal_config = load_yaml_configfile(config["pyrcal_configfile"][year])
+                pyrname = pvrad_config["pv_stations"][key][substat_type]["pyr_down"][year][1]
+                if "Horiz" in pyrname:
+                    pyrname = pyrname.split('_')[0] + "_32S"
+                    
+                pyr_station = pvrad_config["pv_stations"][key][substat_type]["pyr_down"][year][0]
+                radname = pyrcal_config["pv_stations"][pyr_station]["substat"][pyrname]["name"]                
+    
     
         # Save solution for key to file
         save_results(key,pvsys[key],substat_type,pvrad_config,pvcal_config,

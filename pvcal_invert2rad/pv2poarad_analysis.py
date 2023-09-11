@@ -23,36 +23,80 @@ from data_process_functions import downsample
 from scipy import optimize
 import datetime
 import seaborn as sns
+import pickle
+from copy import deepcopy
 
 #%%Functions
-def load_pv2poarad_inversion_results(rt_config,pvcal_config,pvrad_config,station_list,home):
+def generate_folder_names_pyr2cf(rt_config,pyrcal_config):
     """
-    Load results from inversion onto plane-of-array irradiance
+    Generate folder structure to retrieve PYR2CF simulation results
     
-    args:        
-    :param rt_config: dictionary with current RT configuration
-    :param pvcal_config: dictionary with current calibration configuration    
-    :param pvrad_config: dictionary with current inversion configuration
-    :param station_list: list of stations
-    :param home: string with homepath
+    args:    
+    :param rt_config: dictionary with RT configuration
+    :param pyrcal_config: dictionary with PYRCAL configuration
     
     out:
-    :return pv_systems: dictionary of PV systems with data
-    :return station_list: list of all stations
-    :return folder_label: string with folder label for saving data
-    """
+    :return folder_label: string with complete folder path
+    :return filename: string with name of file (prefix)
+    :return theta_res, phi_res: tuple of string with DISORT grid resolution
+
+    """    
     
-    mainpath = os.path.join(home,pvrad_config['results_path']['main'],
-                            pvrad_config['results_path']['inversion'])
-    
-    #atmosphere model
+    #geometry model
     atm_geom_config = rt_config["disort_base"]["pseudospherical"]
-    
     if atm_geom_config == True:
         atm_geom_folder = "Pseudospherical"
     else:
-        atm_geom_folder = "Plane-parallel"
+        atm_geom_folder = "Plane-parallel"    
+    
+    #Get DISORT resolution folder label
+    disort_config = rt_config["disort_rad_res"]   
+    theta_res = str(disort_config["theta"]).replace('.','-')
+    phi_res = str(disort_config["phi"]).replace('.','-')
+    
+    disort_folder_label = 'Zen_' + theta_res + '_Azi_' + phi_res
+    filename = 'cloud_fraction_results_'
+    
+    if rt_config["atmosphere"] == "default":
+        atm_folder_label = "Atmos_Default"    
+    elif rt_config["atmosphere"] == "cosmo":
+        atm_folder_label = "Atmos_COSMO"
+        filename = filename + 'atm_'
         
+    if rt_config["aerosol"]["source"] == "default":
+        aero_folder_label = "Aerosol_Default"
+    elif rt_config["aerosol"]["source"] == "aeronet":
+        aero_folder_label = "Aeronet_" + rt_config["aerosol"]["station"]
+        filename = filename + 'asl_' + rt_config["aerosol"]["data_res"] + '_'
+            
+    sza_label = "SZA_" + str(int(pyrcal_config["sza_max"]["inversion"]))
+
+    folder_label = os.path.join(atm_geom_folder,disort_folder_label,
+                                atm_folder_label,aero_folder_label,sza_label)
+        
+    return folder_label, filename, (theta_res,phi_res)
+
+def generate_folder_names_poarad(rt_config,pvcal_config):
+    """
+    Generate folder structure to retrieve POA Rad results
+    
+    args:    
+    :param rt_config: dictionary with RT configuration
+    :param pvcal_config: dictionary with PVCAL configuration
+    
+    out:
+    :return folder_label: string with complete folder path
+    :return filename: string with name of file (prefix)
+    :return theta_res, phi_res: tuple of string with DISORT grid resolution
+    """    
+    
+    #geometry model
+    atm_geom_config = rt_config["disort_base"]["pseudospherical"]
+    if atm_geom_config == True:
+        atm_geom_folder = "Pseudospherical"
+    else:
+        atm_geom_folder = "Plane-parallel"        
+    
     #Wavelength range of simulation
     wvl_config = rt_config["common_base"]["wavelength"]["pv"]
     
@@ -61,6 +105,7 @@ def load_pv2poarad_inversion_results(rt_config,pvcal_config,pvrad_config,station
     elif wvl_config == "all":
         wvl_folder_label = "Wvl_Full"
     
+    #Get DISORT resolution folder label
     disort_config = rt_config["disort_rad_res"]   
     theta_res = str(disort_config["theta"]).replace('.','-')
     phi_res = str(disort_config["phi"]).replace('.','-')
@@ -79,46 +124,247 @@ def load_pv2poarad_inversion_results(rt_config,pvcal_config,pvrad_config,station
     elif rt_config["aerosol"]["source"] == "aeronet":
         aero_folder_label = "Aeronet_" + rt_config["aerosol"]["station"]
         filename = filename + 'asl_' + rt_config["aerosol"]["data_res"] + '_'
-
+        
     sza_label = "SZA_" + str(int(pvrad_config["sza_max"]["inversion"]))
-
+    
     model = pvcal_config["inversion"]["power_model"]
     eff_model = pvcal_config["eff_model"]
-    T_model = pvcal_config["T_model"]["model"] 
-    
-    folder_label = os.path.join(mainpath,atm_geom_folder,wvl_folder_label,
-                                disort_folder_label,atm_folder_label,
-                                aero_folder_label,sza_label,model,eff_model,
+    T_model = pvcal_config["T_model"]["model"]    
+
+    folder_label = os.path.join(atm_geom_folder,wvl_folder_label,disort_folder_label,
+                                atm_folder_label,aero_folder_label,sza_label,model,eff_model,
                                 T_model)
     
-    if len(pvrad_config["calibration_source"]) > 1:
-        infos = '_'.join(pvrad_config["calibration_source"])
-    else:
-        infos = pvrad_config["calibration_source"][0]
+    return folder_label, filename, (theta_res,phi_res)
+
+def load_pyr2cf_pv2poarad_results(rt_config,pyr_config,pvcal_config,pvrad_config,info,station_list,home):
+    """
+    Load results from pyranometer calibration and cloud fraction calculation
+    As well as PV to POA irradiance inversion and cloud fraction
     
-    filename = filename + infos + '_disortres_' + theta_res + '_' + phi_res + '_'
+    args:    
+    :param rt_config: dictionary with current RT configuration
+    :param pyr_config: dictionary with current RT configuration
+    :param pvcal_config: dictionary with current calibration configuration    
+    :param pvrad_config: dictionry with pv2rad configuration
+    :param info: string with name of campaign
+    :param station_list: list of PV stations
+    :param home: string with homepath
     
+    out:    
+    :return pv_systems: dictionary of PV systems with data    
+    :return station_list: list of stations
+    :return pyr_folder_label: string with path for pyranometer results
+    :return pv_folder_label: string with path for PV results
+    """
+    
+    mainpath = os.path.join(home,pyr_config['results_path']["main"],
+                            pyr_config['results_path']['cloud_fraction'])
+    
+    folder_label, filename, (theta_res,phi_res) = \
+    generate_folder_names_pyr2cf(rt_config,pyr_config)
+        
+    filename = filename + info + '_disortres_' + theta_res + '_' + phi_res + '_'
+    
+    year = info.split('_')[1]
+    #Define new dictionary to contain all information, data etc
     pv_systems = {}    
         
     #Choose which stations to load    
     if type(station_list) != list:
-        station_list = [station_list]    
-        if station_list[0] == "all":
+        station_list = [station_list]
+        if station_list[0] == "all":            
             station_list = list(pvrad_config["pv_stations"].keys())
     
     for station in station_list:                
         #Read in binary file that was saved from pvcal_radsim_disort
         filename_stat = filename + station + '.data'
         try:
-            with open(os.path.join(folder_label,filename_stat), 'rb') as filehandle:  
+            with open(os.path.join(mainpath,folder_label,filename_stat), 'rb') as filehandle:  
                 # read the data as binary data stream
-                (pvstat, dummy, dummy, dummy) = pd.read_pickle(filehandle)            
+                (pvstat, dummy, dummy) = pd.read_pickle(filehandle)            
+            
+            pvstat["substations_pyr"] = pvstat.pop("substations")
+            delkeys = []
+            for key in pvstat:
+                if year in key:
+                    key_data = deepcopy(key)
+                    keystring = key.split('_')
+                    
+                if "path" not in key and "lat_lon" not in key and year not in key\
+                    and "substations" not in key:
+                    delkeys.append(key)
+            
+            pvstat['_'.join([keystring[0],'pyr',year,keystring[-1]])] = \
+                    pvstat.pop(key_data)
+            
+            for key in delkeys:
+                del pvstat[key]
+            
             pv_systems.update({station:pvstat})
+            
             print('Data for %s loaded from %s, %s' % (station,folder_label,filename))
         except IOError:
-            print('There are no inversion results for %s in %s' % (station,folder_label))
+            print('There are no irradiance data for %s' % station)                   
+    
+    # results_path = os.path.join(home,pyr_config['results_path']["main"],
+    #                             pyr_config["results_path"]["irradiance"])
+    # pyr_folder_label = os.path.join(results_path,folder_label,'Pyranometer')    
+    
+    mainpath = os.path.join(home,pvrad_config['results_path']["main"],
+                            pvrad_config['results_path']['inversion'])
+    
+    #Generate folder structure for loading files
+    folder_label, filename, (theta_res,phi_res) = \
+    generate_folder_names_poarad(rt_config,pvcal_config)    
+    
+    #Check calibration source for filename    
+    if len(pvrad_config["calibration_source"]) > 1:
+        infos = '_'.join(pvrad_config["calibration_source"])
+    else:
+        infos = pvrad_config["calibration_source"][0]
+    
+    filename = filename + infos + '_disortres_' + theta_res + '_' + phi_res + '_'        
+    
+    for station in station_list:                
+        #Read in binary file that was saved from pvcal_radsim_disort
+        filename_stat = filename + station + '.data'
+        try:
+            with open(os.path.join(mainpath,folder_label,filename_stat), 'rb') as filehandle:  
+                # read the data as binary data stream
+                (pvstat, rt_config, pvcal_config, dummy) = pd.read_pickle(filehandle)            
             
-    return pv_systems, station_list, folder_label
+            #Renaming things to add "pv" in the dataframe names
+            pvstat["substations_pv"] = pvstat.pop("substations")
+            delkeys = []
+            key_data = []
+            for key in pvstat:
+                if f"df_{year}" in key:
+                    key_data.append(key)
+                    
+                if ("path" not in key and "lat_lon" not in key and year not in key\
+                    and "substations" not in key) or ("cosmo" in key or "sim" in key):
+                    delkeys.append(key)
+            
+            for key in key_data:
+                keystring = key.split('_')
+                pvstat['_'.join([keystring[0],'pv',year,keystring[-1]])] = \
+                    pvstat.pop(key)
+            
+            for key in delkeys:
+                del pvstat[key]
+            
+            if station not in pv_systems:
+                pv_systems.update({station:pvstat})
+            else:    
+                pv_systems[station] = merge_two_dicts(pv_systems[station],pvstat)
+            
+            print('Data for %s loaded from %s, %s' % (station,folder_label,filename))
+        except IOError:
+            print('There is no simulation for %s at %s' % (station,folder_label))   
+            
+    # results_path = os.path.join(home,pvrad_config["results_path"]["main"],
+    #                             pvrad_config["results_path"]["irradiance"])
+    pv_folder_label = os.path.join(mainpath,folder_label)    
+    
+    return pv_systems, station_list, pv_folder_label
+
+# def load_pv2poarad_inversion_results(rt_config,pvcal_config,pvrad_config,station_list,home):
+#     """
+#     Load results from inversion onto plane-of-array irradiance
+    
+#     args:        
+#     :param rt_config: dictionary with current RT configuration
+#     :param pvcal_config: dictionary with current calibration configuration    
+#     :param pvrad_config: dictionary with current inversion configuration
+#     :param station_list: list of stations
+#     :param home: string with homepath
+    
+#     out:
+#     :return pv_systems: dictionary of PV systems with data
+#     :return station_list: list of all stations
+#     :return folder_label: string with folder label for saving data
+#     """
+    
+#     mainpath = os.path.join(home,pvrad_config['results_path']['main'],
+#                             pvrad_config['results_path']['inversion'])
+    
+#     #atmosphere model
+#     atm_geom_config = rt_config["disort_base"]["pseudospherical"]
+    
+#     if atm_geom_config == True:
+#         atm_geom_folder = "Pseudospherical"
+#     else:
+#         atm_geom_folder = "Plane-parallel"
+        
+#     #Wavelength range of simulation
+#     wvl_config = rt_config["common_base"]["wavelength"]["pv"]
+    
+#     if type(wvl_config) == list:
+#         wvl_folder_label = "Wvl_" + str(int(wvl_config[0])) + "_" + str(int(wvl_config[1]))
+#     elif wvl_config == "all":
+#         wvl_folder_label = "Wvl_Full"
+    
+#     disort_config = rt_config["disort_rad_res"]   
+#     theta_res = str(disort_config["theta"]).replace('.','-')
+#     phi_res = str(disort_config["phi"]).replace('.','-')
+    
+#     disort_folder_label = 'Zen_' + theta_res + '_Azi_' + phi_res
+#     filename = 'tilted_irradiance_cloud_fraction_results_'
+    
+#     if rt_config["atmosphere"] == "default":
+#         atm_folder_label = "Atmos_Default"    
+#     elif rt_config["atmosphere"] == "cosmo":
+#         atm_folder_label = "Atmos_COSMO"
+#         filename = filename + 'atm_'
+        
+#     if rt_config["aerosol"]["source"] == "default":
+#         aero_folder_label = "Aerosol_Default"
+#     elif rt_config["aerosol"]["source"] == "aeronet":
+#         aero_folder_label = "Aeronet_" + rt_config["aerosol"]["station"]
+#         filename = filename + 'asl_' + rt_config["aerosol"]["data_res"] + '_'
+
+#     sza_label = "SZA_" + str(int(pvrad_config["sza_max"]["inversion"]))
+
+#     model = pvcal_config["inversion"]["power_model"]
+#     eff_model = pvcal_config["eff_model"]
+#     T_model = pvcal_config["T_model"]["model"] 
+    
+#     folder_label = os.path.join(mainpath,atm_geom_folder,wvl_folder_label,
+#                                 disort_folder_label,atm_folder_label,
+#                                 aero_folder_label,sza_label,model,eff_model,
+#                                 T_model)
+    
+#     if len(pvrad_config["calibration_source"]) > 1:
+#         infos = '_'.join(pvrad_config["calibration_source"])
+#     else:
+#         infos = pvrad_config["calibration_source"][0]
+    
+#     filename = filename + infos + '_disortres_' + theta_res + '_' + phi_res + '_'
+    
+#     pv_systems = {}    
+        
+#     #Choose which stations to load    
+#     if type(station_list) != list:
+#         station_list = [station_list]    
+#         if station_list[0] == "all":
+#             station_list = list(pvrad_config["pv_stations"].keys())
+    
+#     for station in station_list:                
+#         #Read in binary file that was saved from pvcal_radsim_disort
+#         filename_stat = filename + station + '.data'
+#         try:
+#             with open(os.path.join(folder_label,filename_stat), 'rb') as filehandle:  
+#                 # read the data as binary data stream
+#                 (pvstat, dummy, dummy, dummy) = pd.read_pickle(filehandle)            
+#             pv_systems.update({station:pvstat})
+#             print('Data for %s loaded from %s, %s' % (station,folder_label,filename))
+#         except IOError:
+#             print('There are no inversion results for %s in %s' % (station,folder_label))
+            
+#     return pv_systems, station_list, folder_label
+
+
 
 def write_results_table(key,substat,stats,pyrname,year,path):
     """
@@ -161,6 +407,35 @@ def write_results_table(key,substat,stats,pyrname,year,path):
                 f"{stats[f'max_Delta_GTI_plus_{pyrname}_Wm2']:13.3f} {stats[f'max_Delta_GTI_minus_{pyrname}_Wm2']:13.3f} "\
                     f"{stats['n_delta']:10.0f}\n")
     f.close()
+    
+def downsample_pyranometer(dataframe,timeres_old,timeres_new):
+    """
+    Downsample pyranometer data to coarser data
+
+    Parameters
+    ----------
+    dataframe : dataframe with high resolution data    
+    timeres_old : string, old time resolution
+    timeres_new : string, desired time resolution    
+
+    Returns
+    -------
+    dataframe with downsampled pyranometer data
+
+    """
+    
+    #Convert time resolutions
+    timeres_old = pd.to_timedelta(timeres_old)
+    timeres_new = pd.to_timedelta(timeres_new)
+    
+    dfs_rs = []
+    for day in pd.to_datetime(dataframe.index.date).unique().strftime('%Y-%m-%d'):
+        #Downsample data
+        dfs_rs.append(downsample(dataframe.loc[day], timeres_old, timeres_new))
+    
+    df_rs = pd.concat(dfs_rs,axis=0)
+        
+    return df_rs
 
 def calc_statistics_gti(key,pv_station,year,pvrad_config,pyrcal_config,folder):
     """
@@ -188,31 +463,35 @@ def calc_statistics_gti(key,pv_station,year,pvrad_config,pyrcal_config,folder):
     stats = pv_station["stats"][year]
     
     dfs_stats = []
-    for substat_type in pv_station["substations"]:    
-        for substat in pv_station["substations"][substat_type]["data"]:
-            if year in pv_station["substations"][substat_type]["source"]:                                
+    for substat_type in pv_station["substations_pv"]:    
+        for substat in pv_station["substations_pv"][substat_type]["data"]:
+            if year in pv_station["substations_pv"][substat_type]["source"]:                                
                 
                 yrname = year.split('_')[-1]
-                timeres = pv_station["substations"][substat_type]["t_res_inv"]
-                dfname = 'df_' + year.split('_')[-1] + '_' + timeres
+                timeres = pv_station["substations_pv"][substat_type]["t_res_inv"]
+                dfname = f"df_pv_{yrname}_{timeres}"
                 
                 dataframe = pv_station[dfname].loc[(pv_station[dfname][("sza","sun")]\
                           <= pvrad_config["sza_max"]["inversion"]) &\
-                           (pv_station[dfname][("theta_IA",substat)] <= \
-                            pvrad_config["sza_max"]["inversion"])]
+                             (pv_station[dfname][("theta_IA",substat)] <= \
+                              pvrad_config["sza_max"]["inversion"])]
                 
                 pyrname = pvrad_config["pv_stations"][key][substat_type]["pyr_down"][year][1]
                 if "Horiz" in pyrname:
                     pyrname = pyrname.split('_')[0] + "_32S"
                     
                 pyr_station = pvrad_config["pv_stations"][key][substat_type]["pyr_down"][year][0]
-                radname = pyrcal_config["pv_stations"][pyr_station]["substat"][pyrname]["name"]                
+                radname = pyrcal_config["pv_stations"][pyr_station]["substat"][pyrname]["name"]                                
                 
                 delta_GTI = dataframe[("Etotpoa_pv_inv_tau",substat)]\
                     - dataframe[(radname,pyrname)]
                 rmse = (((delta_GTI)**2).mean())**0.5
                 mad = abs(delta_GTI).mean()
                 mbe = delta_GTI.mean()
+                
+                mean_obs = dataframe[(radname,pyrname)].mean(axis=0)
+                rmbe = mbe/mean_obs*100
+                rrmse = rmse/mean_obs*100
                 
                 delta_max_plus = delta_GTI.max()
                 delta_max_minus = delta_GTI.min()                
@@ -223,15 +502,18 @@ def calc_statistics_gti(key,pv_station,year,pvrad_config,pyrcal_config,folder):
                 
                 stats[substat].update({"n_delta":n_delta})
                 stats[substat].update({f"RMSE_GTI_{pyrname}_Wm2":rmse})
+                stats[substat].update({f"rRMSE_GTI_{pyrname}_%":rrmse})
                 stats[substat].update({f"MAD_GTI_{pyrname}_Wm2":mad})
                 stats[substat].update({f"MBE_GTI_{pyrname}_Wm2":mbe})
+                stats[substat].update({f"rMBE_GTI_{pyrname}_%":rmbe})
+                stats[substat].update({f"mean_GTI_{pyrname}_Wm2":mean_obs})
                 stats[substat].update({f"max_Delta_GTI_plus_{pyrname}_Wm2":delta_max_plus})
                 stats[substat].update({f"max_Delta_GTI_minus_{pyrname}_Wm2":delta_max_minus})
                 
                 print(f"{key}, {yrname}: statistics at {timeres} calculated with {n_delta} measurements")
-                print(f"RMSE for GTI inverted from {substat} compared to {pyrname} is {rmse}")
+                print(f"RMSE for GTI inverted from {substat} compared to {pyrname} is {rmse} ({rrmse:.1f} %)")
                 print(f"MAE for GTI inverted from {substat} compared to {pyrname} is {mad}")
-                print(f"MBE for GTI inverted from {substat} compared to {pyrname} is {mbe}")
+                print(f"MBE for GTI inverted from {substat} compared to {pyrname} is {mbe} ({rmbe:.1f} %)")
                 
                 #Assign delta to the dataframe
                 pv_station[dfname].loc[dataframe.index,("delta_GTI_Wm2",substat)] = delta_GTI
@@ -322,17 +604,17 @@ def plot_irradiance_comparison(key,pv_station,year,pvrad_config,folder):
     if key not in stat_dirs:
         os.mkdir(savepath)
         
-    for substat_type in pv_station["substations"]:    
-        for substat in pv_station["substations"][substat_type]["data"]:
+    for substat_type in pv_station["substations_pv"]:    
+        for substat in pv_station["substations_pv"][substat_type]["data"]:
             substat_dirs = list_dirs(savepath)
             plotpath = os.path.join(savepath,substat)
             if substat not in substat_dirs:
                 os.mkdir(plotpath)
             
-            if year in pv_station["substations"][substat_type]["source"]:                                
+            if year in pv_station["substations_pv"][substat_type]["source"]:                                
                 print('Generating irradiance plots for %s, %s' % (substat,year))
-                timeres = pv_station["substations"][substat_type]["t_res_inv"]
-                dfname = 'df_' + year.split('_')[-1] + '_' + timeres
+                timeres = pv_station["substations_pv"][substat_type]["t_res_inv"]
+                dfname = 'df_pv_' + year.split('_')[-1] + '_' + timeres
                 # dfcosmo = 'df_cosmo_' + year.split('_')[-1]
                 dataframe = pv_station[dfname] #.xs(substat,level='substat',axis=1)             
                                 
@@ -434,21 +716,21 @@ def scatter_plot_gti_hist(key,pv_station,pvrad_config,folder):
     if key not in stat_dirs:
         os.mkdir(savepath)            
         
-    for substat_type in pv_station["substations"]:    
-        for substat in pv_station["substations"][substat_type]["data"]:                        
-            if year in pv_station["substations"][substat_type]["source"]:                                
+    for substat_type in pv_station["substations_pv"]:    
+        for substat in pv_station["substations_pv"][substat_type]["data"]:                        
+            if year in pv_station["substations_pv"][substat_type]["source"]:                                
                 print('Generating scatter plots for %s, %s, %s' % (key,substat,year))
-                timeres = pv_station["substations"][substat_type]["t_res_inv"]
-                dfname = 'df_' + year.split('_')[-1] + '_' + timeres
+                timeres = pv_station["substations_pv"][substat_type]["t_res_inv"]
+                dfname = 'df_pv_' + year.split('_')[-1] + '_' + timeres
                 # dfcosmo = 'df_cosmo_' + year.split('_')[-1]
                 dataframe = pv_station[dfname].loc[(pv_station[dfname][("sza","sun")]\
                           <= pvrad_config["sza_max"]["inversion"]) &\
                            (pv_station[dfname][("theta_IA",substat)] <= pvrad_config["sza_max"]["inversion"])]          
                 
-                if 'opt_pars' in pv_station["substations"][substat_type]["data"][substat]:
-                    opt_pars = pv_station["substations"][substat_type]["data"][substat]['opt_pars'] 
+                if 'opt_pars' in pv_station["substations_pv"][substat_type]["data"][substat]:
+                    opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['opt_pars'] 
                 else:
-                    opt_pars = pv_station["substations"][substat_type]["data"][substat]['ap_pars'] 
+                    opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['ap_pars'] 
                     
                 tilt = np.rad2deg(opt_pars[0][1])
                 azi = np.fmod(np.rad2deg(opt_pars[1][1])+180,360)
@@ -498,9 +780,9 @@ def scatter_plot_gti_hist(key,pv_station,pvrad_config,folder):
                 
                 plt.annotate(rf"$\theta = {tilt:.2f}^\circ, \phi = {azi:.2f}^\circ$",
                  xy=(0.14,0.9),xycoords='figure fraction',fontsize=14)                     
-                plt.annotate(rf"MBE = {stats[f'MBE_GTI_{pyrname}_Wm2']:.3f} W/m$^2$",
+                plt.annotate(rf"MBE = {stats[f'MBE_GTI_{pyrname}_Wm2']:.3f} W/m$^2$ ({stats[f'rMBE_GTI_{pyrname}_%']:.1f} %)",
                  xy=(0.14,0.86),xycoords='figure fraction',fontsize=14)     
-                plt.annotate(rf"RMSE = {stats[f'RMSE_GTI_{pyrname}_Wm2']:.3f} W/m$^2$",
+                plt.annotate(rf"RMSE = {stats[f'RMSE_GTI_{pyrname}_Wm2']:.3f} W/m$^2$ ({stats[f'rRMSE_GTI_{pyrname}_%']:.1f} %)",
                  xy=(0.14,0.82),xycoords='figure fraction',fontsize=14)     
                 plt.annotate(rf"n = {stats['n_delta']:.0f}",
                  xy=(0.14,0.78),xycoords='figure fraction',fontsize=14)  
@@ -581,17 +863,17 @@ def plot_cloud_fraction(key,pv_station,year,pvrad_config,folder):
     if key not in stat_dirs:
         os.mkdir(savepath)
         
-    for substat_type in pv_station["substations"]:    
-        for substat in pv_station["substations"][substat_type]["data"]:
+    for substat_type in pv_station["substations_pv"]:    
+        for substat in pv_station["substations_pv"][substat_type]["data"]:
             substat_dirs = list_dirs(savepath)
             plotpath = os.path.join(savepath,substat)
             if substat not in substat_dirs:
                 os.mkdir(plotpath)
             
-            if year in pv_station["substations"][substat_type]["source"]:                
+            if year in pv_station["substations_pv"][substat_type]["source"]:                
                 print('Generating cloud fraction plots for %s, %s' % (substat,year))
-                timeres = pv_station["substations"][substat_type]["t_res_inv"]
-                dfname = 'df_' + year.split('_')[-1] + '_' + timeres
+                timeres = pv_station["substations_pv"][substat_type]["t_res_inv"]
+                dfname = 'df_pv_' + year.split('_')[-1] + '_' + timeres
                                                 
                 dataframe = pv_station[dfname].xs(substat,level='substat',axis=1)
                 if "cloudcam" in pv_station[dfname].columns.levels[1]:
@@ -670,14 +952,14 @@ def plot_mean_spectral_fit(key,pv_station,year,pvrad_config,folder,title_flag):
     if key not in stat_dirs:
         os.mkdir(savepath)
         
-    for substat_type in pv_station["substations"]:    
-        for substat in pv_station["substations"][substat_type]["data"]:
+    for substat_type in pv_station["substations_pv"]:    
+        for substat in pv_station["substations_pv"][substat_type]["data"]:
             substat_dirs = list_dirs(savepath)
             plotpath = os.path.join(savepath,substat)
             if substat not in substat_dirs:
                 os.mkdir(plotpath)
     
-            dffit = pv_station["substations"][substat_type]["data"][substat][f"df_spectral_fit_{year}"]
+            dffit = pv_station["substations_pv"][substat_type]["data"][substat][f"df_spectral_fit_{year}"]
             dffit = dffit.loc[dffit.cos_IA != 0]
             dffit["cos_diff_phi"] = np.cos(np.deg2rad(dffit.diff_phi))
             dffit["phi0_real"] = np.fmod(dffit.phi0 + 180,360)
@@ -685,10 +967,10 @@ def plot_mean_spectral_fit(key,pv_station,year,pvrad_config,folder,title_flag):
                 *np.cos(np.pi/2 - np.arccos(dffit.cos_IA))
             days = pd.to_datetime(dffit.index.date).unique().strftime('%Y-%m-%d')
             
-            if 'opt_pars' in pv_station["substations"][substat_type]["data"][substat]:
-                opt_pars = pv_station["substations"][substat_type]["data"][substat]['opt_pars'] 
+            if 'opt_pars' in pv_station["substations_pv"][substat_type]["data"][substat]:
+                opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['opt_pars'] 
             else:
-                opt_pars = pv_station["substations"][substat_type]["data"][substat]['ap_pars'] 
+                opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['ap_pars'] 
                     
             tilt = np.rad2deg(opt_pars[0][1])
             azi = np.fmod(np.rad2deg(opt_pars[1][1])+180,360)
@@ -832,14 +1114,14 @@ def plot_spectral_fit_time_groups(key,pv_station,year,pvrad_config,folder,title_
     if key not in stat_dirs:
         os.mkdir(savepath)
         
-    for substat_type in pv_station["substations"]:    
-        for substat in pv_station["substations"][substat_type]["data"]:
+    for substat_type in pv_station["substations_pv"]:    
+        for substat in pv_station["substations_pv"][substat_type]["data"]:
             substat_dirs = list_dirs(savepath)
             plotpath = os.path.join(savepath,substat)
             if substat not in substat_dirs:
                 os.mkdir(plotpath)
     
-            dffit = pv_station["substations"][substat_type]["data"][substat][f"df_spectral_fit_{year}"]
+            dffit = pv_station["substations_pv"][substat_type]["data"][substat][f"df_spectral_fit_{year}"]
             dffit = dffit.loc[dffit.cos_IA != 0]
             dffit["cos_diff_phi"] = np.cos(np.deg2rad(dffit.diff_phi))
             dffit["phi0_real"] = np.fmod(dffit.phi0 + 180,360)
@@ -847,10 +1129,10 @@ def plot_spectral_fit_time_groups(key,pv_station,year,pvrad_config,folder,title_
                 *np.cos(np.pi/2 - np.arccos(dffit.cos_IA))
             days = pd.to_datetime(dffit.index.date).unique().strftime('%Y-%m-%d')
             
-            if 'opt_pars' in pv_station["substations"][substat_type]["data"][substat]:
-                opt_pars = pv_station["substations"][substat_type]["data"][substat]['opt_pars'] 
+            if 'opt_pars' in pv_station["substations_pv"][substat_type]["data"][substat]:
+                opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['opt_pars'] 
             else:
-                opt_pars = pv_station["substations"][substat_type]["data"][substat]['ap_pars'] 
+                opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['ap_pars'] 
                     
             tilt = np.rad2deg(opt_pars[0][1])
             azi = np.fmod(np.rad2deg(opt_pars[1][1])+180,360)
@@ -1070,8 +1352,8 @@ def plot_grid_combined_scatter(dict_pv_stations,list_stations,pvrad_config,T_mod
         pv_station = dict_pv_stations[station]        
         #print(f"Adding plot for {station}, {year}")
         
-        timeres = pv_station["substations"][substat_type]["t_res_inv"]
-        dfname = 'df_' + year.split('_')[-1] + '_' + timeres
+        timeres = pv_station["substations_pv"][substat_type]["t_res_inv"]
+        dfname = 'df_pv_' + year.split('_')[-1] + '_' + timeres
         # dfcosmo = 'df_cosmo_' + year.split('_')[-1]
         dataframe = pv_station[dfname] #.xs(substat,level='substat',axis=1)                             
         
@@ -1125,8 +1407,8 @@ def plot_grid_combined_scatter(dict_pv_stations,list_stations,pvrad_config,T_mod
             
         pv_station = dict_pv_stations[station]        
         
-        timeres = pv_station["substations"][substat_type]["t_res_inv"]
-        dfname = 'df_' + year.split('_')[-1] + '_' + timeres
+        timeres = pv_station["substations_pv"][substat_type]["t_res_inv"]
+        dfname = 'df_pv_' + year.split('_')[-1] + '_' + timeres
         # dfcosmo = 'df_cosmo_' + year.split('_')[-1]
         dataframe = pv_station[dfname]
         
@@ -1142,9 +1424,9 @@ def plot_grid_combined_scatter(dict_pv_stations,list_stations,pvrad_config,T_mod
         ax.plot([0, 1], [0, 1], ls = '--', transform=ax.transAxes,c='k')
         ax.set_title(f"{station_label}, {year_label}",fontsize=14)
         
-        ax.annotate(rf"MBE = {stats[f'MBE_GTI_{pyrname}_Wm2']:.2f} W/m$^2$",
+        ax.annotate(rf"MBE = {stats[f'MBE_GTI_{pyrname}_Wm2']:.2f} W/m$^2$ ({stats[f'rMBE_GTI_{pyrname}_%']:.2f} %)",
                  xy=(0.05,0.92),xycoords='axes fraction',fontsize=10)     
-        ax.annotate(rf"RMSE = {stats[f'RMSE_GTI_{pyrname}_Wm2']:.2f} W/m$^2$",
+        ax.annotate(rf"RMSE = {stats[f'RMSE_GTI_{pyrname}_Wm2']:.2f} W/m$^2$ ({stats['rRMSE_GTI_{pyrname}_%']:.2f} %)",
                  xy=(0.05,0.85),xycoords='axes fraction',fontsize=10)  
         ax.annotate(rf"n = {stats['n_delta']:.0f}",
                  xy=(0.05,0.78),xycoords='axes fraction',fontsize=10)  
@@ -1209,15 +1491,15 @@ def plot_histogram_deviations(key,pv_station,pvrad_config,folder):
         os.mkdir(savepath)
         
     campaigns = pvrad_config["calibration_source"]    
-    for substat_type in pv_station["substations"]:    
-        for substat in pv_station["substations"][substat_type]["data"]:                        
+    for substat_type in pv_station["substations_pv"]:    
+        for substat in pv_station["substations_pv"][substat_type]["data"]:                        
             
             fig, ax = plt.subplots(figsize=(9,8))
             
-            if 'opt_pars' in pv_station["substations"][substat_type]["data"][substat]:
-                opt_pars = pv_station["substations"][substat_type]["data"][substat]['opt_pars'] 
+            if 'opt_pars' in pv_station["substations_pv"][substat_type]["data"][substat]:
+                opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['opt_pars'] 
             else:
-                opt_pars = pv_station["substations"][substat_type]["data"][substat]['ap_pars'] 
+                opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['ap_pars'] 
                     
             tilt = np.rad2deg(opt_pars[0][1])
             azi = np.fmod(np.rad2deg(opt_pars[1][1])+180,360)
@@ -1227,10 +1509,10 @@ def plot_histogram_deviations(key,pv_station,pvrad_config,folder):
             
             for i, campaign in enumerate(campaigns):
                 year = f"mk_{campaign.split('_')[1]}"
-                if year in pv_station["substations"][substat_type]["source"]:                                
+                if year in pv_station["substations_pv"][substat_type]["source"]:                                
                     print('Generating histograms for %s, %s, %s' % (key,substat,year))
-                    timeres = pv_station["substations"][substat_type]["t_res_inv"]
-                    dfname = 'df_' + year.split('_')[-1] + '_' + timeres
+                    timeres = pv_station["substations_pv"][substat_type]["t_res_inv"]
+                    dfname = 'df_pv_' + year.split('_')[-1] + '_' + timeres
                     # dfcosmo = 'df_cosmo_' + year.split('_')[-1]
                     dataframe = pv_station[dfname] #.xs(substat,level='substat',axis=1)             
                     
@@ -1300,6 +1582,10 @@ def combined_stats(dict_combo_stats,year,timeres_list):
             mad = abs(df_delta_all.delta_GTI_Wm2.stack()).mean()
             mbe = df_delta_all.delta_GTI_Wm2.stack().mean()
             
+            mean_obs = df_delta_all.GTI_Pyr_ref.stack().mean()
+            rmbe = mbe/mean_obs*100
+            rrmse = rmse/mean_obs*100
+            
             delta_max_plus = df_delta_all.delta_GTI_Wm2.stack().max()
             delta_max_minus = df_delta_all.delta_GTI_Wm2.stack().min()
             
@@ -1308,17 +1594,20 @@ def combined_stats(dict_combo_stats,year,timeres_list):
             dict_combo_stats.update({timeres:{}})
             dict_combo_stats[timeres].update({"n_delta":n_delta})
             dict_combo_stats[timeres].update({"RMSE_GTI_Wm2":rmse})
+            dict_combo_stats[timeres].update({"rRMSE_GTI_%":rrmse})
             dict_combo_stats[timeres].update({"MAD_GTI_Wm2":mad})
             dict_combo_stats[timeres].update({"MBE_GTI_Wm2":mbe})
+            dict_combo_stats[timeres].update({"rMBE_GTI_%":rmbe})
+            dict_combo_stats[timeres].update({"mean_GTI_Wm2":mean_obs})
             dict_combo_stats[timeres].update({"max_Delta_GTI_plus_Wm2":delta_max_plus})
             dict_combo_stats[timeres].update({"max_Delta_GTI_minus_Wm2":delta_max_minus})
         
             print(f"{year}: combined statistics at {timeres} from "\
                   f"{dict_combo_stats[f'df_delta_all_{timeres}'].columns.levels[2].to_list()}"\
                   f" calculated with {n_delta} measurements")
-            print(f"Combined RMSE for GTI in {year} is {rmse}")
+            print(f"Combined RMSE for GTI in {year} is {rmse} ({rrmse:.1f} %)")
             print(f"Combined MAE for GTI in {year} is {mad}")
-            print(f"Combined MBE for GTI in {year} is {mbe}")
+            print(f"Combined MBE for GTI in {year} is {mbe} ({rmbe:.1f} %)")
         
 def plot_all_combined_scatter(dict_stats,list_stations,pvrad_config,T_model,folder,title_flag):
     """
@@ -1376,7 +1665,7 @@ def plot_all_combined_scatter(dict_stats,list_stations,pvrad_config,T_model,fold
             z = gaussian_kde(xy)(xy)
             idx = z.argsort()
             
-            plot_data.append((gti_ref[idx], gti_inv[idx], z[idx]))
+            #plot_data.append((gti_ref[idx], gti_inv[idx], z[idx]))
             
             # sc = sns.kdeplot(x=gti_ref,y=gti_inv,cbar=i==0,ax=ax,cmap="icefire",fill=True,#bins=100,
             #       cbar_kws={'orientation': 'horizontal'},
@@ -1391,25 +1680,27 @@ def plot_all_combined_scatter(dict_stats,list_stations,pvrad_config,T_model,fold
             max_gti = np.max([max_gti,gti_ref.max(),gti_inv.max()])
             max_gti = np.ceil(max_gti/100)*100    
             max_z = np.max([max_z,np.max(z)])
-            min_z = np.min([min_z,np.min(z)])
+        #     min_z = np.min([min_z,np.min(z)])
             
-        norm = plt.Normalize(min_z,max_z)    
+        # norm = plt.Normalize(min_z,max_z)    
         
-        for i, ax in enumerate(axs.flatten()):
-            year = years[i]
+        # for i, ax in enumerate(axs.flatten()):
+            # year = years[i]
             
-            sc = ax.scatter(plot_data[i][0],plot_data[i][1], s=8, c=plot_data[i][2], 
-                            cmap="plasma",
-                            norm=norm)
+            sc = ax.scatter(gti_ref[idx],gti_inv[idx], s=8, c=z[idx], 
+                            cmap="plasma") #,
+                            #norm=norm)
             
             ax.plot([0, 1], [0, 1], ls = '--', transform=ax.transAxes,c='k')
             #ax.set_title(f"{station_label}, {year_label}",fontsize=14)
             
             print(f"Using {dict_stats[year][timeres]['n_delta']} data points for {year} plot")
-            ax.annotate(rf"MBE = {dict_stats[year][timeres]['MBE_GTI_Wm2']:.2f} W m$^{{-2}}$" "\n" \
-                        rf"RMSE = {dict_stats[year][timeres]['RMSE_GTI_Wm2']:.2f} W m$^{{-2}}$" "\n"\
+            ax.annotate(rf"MBE = {dict_stats[year][timeres]['MBE_GTI_Wm2']:.2f} W m$^{{-2}}$ ({dict_stats[year][timeres]['rMBE_GTI_%']:.1f} %)" "\n" \
+                        rf"RMSE = {dict_stats[year][timeres]['RMSE_GTI_Wm2']:.2f} W m$^{{-2}}$ ({dict_stats[year][timeres]['rRMSE_GTI_%']:.1f} %)" "\n"\
+                            r"$\langle G_\mathrm{ref} \rangle$ =" \
+                            rf" {dict_stats[year][timeres][f'mean_GTI_Wm2']:.2f} W m$^{{-2}}$" "\n"\
                         rf"n = ${dict_stats[year][timeres]['n_delta']:.0f}$",
-                     xy=(0.05,0.8),xycoords='axes fraction',fontsize=10,bbox = dict(facecolor='lightgrey',edgecolor='k', alpha=0.5),
+                     xy=(0.05,0.73),xycoords='axes fraction',fontsize=10,bbox = dict(facecolor='lightgrey',edgecolor='k', alpha=0.5),
                      horizontalalignment='left',multialignment='left')     
             # ax.annotate(rf"RMSE = {dict_stats[year][timeres]['RMSE_GTI_Wm2']:.2f} W/m$^2$",
             #          xy=(0.05,0.85),xycoords='axes fraction',fontsize=10,bbox = dict(facecolor='lightgrey', alpha=0.3))  
@@ -1417,7 +1708,7 @@ def plot_all_combined_scatter(dict_stats,list_stations,pvrad_config,T_model,fold
             #          xy=(0.05,0.78),xycoords='axes fraction',fontsize=10,bbox = dict(facecolor='lightgrey', alpha=0.3))                  
             #ax.set_xticks([0,400,800,1200])
                 
-        cb = fig.colorbar(sc,ticks=[min_z,max_z], 
+        cb = fig.colorbar(sc,ticks=[np.min(z),np.max(z)], 
                           ax=axs[:2], shrink=0.6, location = 'top', 
                             aspect=20)    
         cb.set_ticklabels(["Low", "High"])  # horizontal colorbar
@@ -1445,6 +1736,57 @@ def plot_all_combined_scatter(dict_stats,list_stations,pvrad_config,T_model,fold
         plt.savefig(os.path.join(savepath,f"gti_scatter_hist_combo_all_{timeres}_{T_model['model']}_"\
                  f"{T_model['type']}_{stations_label}.png"),bbox_inches = 'tight')  
         
+def save_combo_stats(dict_stats,list_stations,pvrad_config,T_model,folder):
+    """
+    
+
+    Parameters
+    ----------
+    dict_stats : dictioanry with combined statistics for different averaging times
+    list_stations : list of PV stations
+    pvrad_config : dictionary with PV inversion configuration
+    T_model : string, temperature model used
+    folder : string, folder for saving resul    
+
+    Returns
+    -------
+    None.
+
+    """
+        
+    stations_label = '_'.join(["".join(s.split('_')) for s in list_stations])
+    
+    filename = f"gti_combo_results_stats_{T_model['model']}_{stations_label}.data"
+    
+    with open(os.path.join(folder,filename), 'wb') as filehandle:  
+        # store the data as binary data stream
+        pickle.dump((dict_stats, list_stations, pvrad_config, T_model), filehandle)
+    
+    #Write combined results to CSV
+    for measurement in pvrad_config["inversion_source"]:
+        year = f"mk_{measurement.split('_')[1]}"
+        
+        for timeres in pvrad_config["timeres_comparison"]:
+            if f"df_delta_all_{timeres}" in dict_stats[year]:
+                
+                dataframe = dict_stats[year][f"df_delta_all_{timeres}"]
+                filename_csv = f'gti_combo_results_{timeres}_{year}_{T_model["model"]}.dat'
+                f = open(os.path.join(folder,"CSV_Results",filename_csv), 'w')
+                f.write(f'#Global tilted irradiance inverted from PV data at {timeres} resolution\n')                    
+                f.write('#Comparison data from pyranometer (GTI_Pyr_ref)\n')                    
+                f.write(f'#Stations considered: {list_stations}\n')                    
+                
+                f.write('\n#Multi-index: first line ("variable") refers to measured quantity\n')
+                f.write('#second line ("substat") refers to sensor used for inversion onto GTI\n')
+                f.write('#third line ("station") refers to PV station\n')
+                f.write('#First column is the time stamp, in the format %Y-%m-%d %HH:%MM:%SS\n')
+                f.write('\n')                       
+                
+                dataframe.to_csv(f,sep=';',float_format='%.6f',
+                                  na_rep='nan')
+                
+                f.close()    
+                print('Combined results written to file %s\n' % filename_csv)    
     
 #%%Main Program
 #######################################################################
@@ -1482,17 +1824,17 @@ if args.station:
         stations = 'all'
 else:
     #Stations for which to perform inversion
-    stations = ["PV_12"] #,"PV_01","PV_12"] #"all" #["PV_12"] #,"PV_15","PV_11","PV_19","PV_06","PV_01","PV_04"] #pvrad_config["stations"]
+    stations = ["PV_11","PV_12"] #,"PV_01","PV_12"] #"all" #["PV_12"] #,"PV_15","PV_11","PV_19","PV_06","PV_01","PV_04"] #pvrad_config["stations"]
 
 #Choose measurement campaign
 if args.campaign:
     pvrad_config["inversion_source"] = args.campaign
 #%%Load inversion results
 #Load calibration results, including DISORT RT simulation for clear sky days and COSMO data.
-print('Loading PV2POARAD inversion results')
+#print('Loading PV2POARAD inversion results')
 
-pvsys, station_list, results_folder = \
-load_pv2poarad_inversion_results(rt_config, pvcal_config, pvrad_config, stations, homepath)
+# pvsys, station_list, results_folder = \
+# load_pv2poarad_inversion_results(rt_config, pvcal_config, pvrad_config, stations, homepath)
 
 #%%Plotting
 plt.close('all')
@@ -1502,12 +1844,16 @@ plot_flags = config["plot_flags"]
 T_model = pvcal_config["T_model"]
 
 combo_stats = {}
-print('Performing statistical analysis and plotting results of PV2POARAD for %s' % station_list)
+print('Performing statistical analysis and plotting results of PV2POARAD for %s' % stations)
 for campaign in pvrad_config["calibration_source"]:    
     year = "mk_" + campaign.split('_')[1]
     yrname = year.split('_')[-1]
     
     pyrcal_config = load_yaml_configfile(config["pyrcal_configfile"][year])
+    
+    pvsys, station_list, results_folder = \
+    load_pyr2cf_pv2poarad_results(rt_config, pyrcal_config, pvcal_config, pvrad_config, 
+                                  campaign, stations, homepath)    
     
     combo_stats.update({year:{}})
     combo_stats[year].update({f"df_{yrname}_stats":pd.DataFrame(index=station_list)})
@@ -1516,12 +1862,36 @@ for campaign in pvrad_config["calibration_source"]:
         dfs_deviations.update({tres:[]})
     #Go through stations, calculate statistics and make plots for GTI and CF
     for key in pvsys:
+        #Replace pyranometer data with cosine bias corrected data!     06.08.2023            
+        for substat_type in pvsys[key]["substations_pv"]:    
+            for substat in pvsys[key]["substations_pv"][substat_type]["data"]:
+                if year in pvsys[key]["substations_pv"][substat_type]["source"]:                                
+                    
+                    yrname = year.split('_')[-1]
+                    timeres = pvsys[key]["substations_pv"][substat_type]["t_res_inv"]                    
+                    dfname = f"df_pv_{year.split('_')[-1]}_{timeres}"
+                    dfname_pyr = f"df_pyr_{year.split('_')[-1]}_{timeres}"
+        
+                    pyrname = pvrad_config["pv_stations"][key][substat_type]["pyr_down"][year][1]
+                    if "Pyr" in pyrname:
+                        print(f"Replacing pyranometer data for {pyrname} at {timeres} with cosine bias corrected values")
+                        
+                        pyr_station = pvrad_config["pv_stations"][key][substat_type]["pyr_down"][year][0]
+                        radname = pyrcal_config["pv_stations"][pyr_station]["substat"][pyrname]["name"]                
+                    
+                        if dfname_pyr in pvsys[key]:
+                            pvsys[key][dfname][(radname,pyrname)] = pvsys[key][dfname_pyr][(radname,pyrname)]
+                        else:
+                            pvsys[key][dfname][(radname,pyrname)] = downsample_pyranometer(pvsys[key][f"df_pyr_{year.split('_')[-1]}_1min"]\
+                                [(radname,pyrname)],"1min",timeres)
+                
         #Calculate statistics
         if combo_stats[year][f"df_{yrname}_stats"].empty:
-            combo_stats[year][f"df_{yrname}_stats"] = calc_statistics_gti(key,pvsys[key],year,pvrad_config,pyrcal_config,results_folder)                            
+            combo_stats[year][f"df_{yrname}_stats"] = calc_statistics_gti(key,pvsys[key],year,
+                                          pvrad_config,pyrcal_config,results_folder)                            
         else:
-            combo_stats[year][f"df_{yrname}_stats"] = pd.concat([combo_stats[year][f"df_{yrname}_stats"],calc_statistics_gti(
-                key,pvsys[key],year,pvrad_config,pyrcal_config,results_folder)],axis=0)
+            combo_stats[year][f"df_{yrname}_stats"] = pd.concat([combo_stats[year][f"df_{yrname}_stats"],
+                         calc_statistics_gti(key,pvsys[key],year,pvrad_config,pyrcal_config,results_folder)],axis=0)
         
         for timeres in pvrad_config["timeres_comparison"]:
             if f"df_stats_{timeres}_{yrname}" in pvsys[key]:
@@ -1558,8 +1928,10 @@ for key in pvsys:
         #Plot histograms of deviations
         plot_histogram_deviations(key,pvsys[key],pvrad_config,results_folder)
             
-test_stations = [("PV_12","p_ac_1sec","egrid"),("PV_15","p_ac_1sec","egrid"), #,
-                 ("PV_11","p_ac_1sec","egrid"),("PV_19","p_ac_1sec","egrid")] #
+# test_stations = [("PV_12","p_ac_1sec","egrid"),("PV_15","p_ac_1sec","egrid"), #,
+#                  ("PV_11","p_ac_1sec","egrid"),("PV_19","p_ac_1sec","egrid")] #
+
+save_combo_stats(combo_stats,station_list,pvrad_config,T_model,results_folder)
 
 if plot_flags["combo_stats"]:
     plot_all_combined_scatter(combo_stats,station_list,pvrad_config,T_model,results_folder,plot_flags["titles"])

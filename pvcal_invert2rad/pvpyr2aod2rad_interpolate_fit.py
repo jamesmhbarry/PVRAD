@@ -461,8 +461,8 @@ def load_pv_pyr2aod_lut_results(pv_systems,rt_config,pyr_config,pvrad_config,
         except IOError:
             print('There is no AOD LUT simulation for PV systems at %s in %s' % (station,info))
     
-    results_path = os.path.join(home,pv_config["results_path"]["main"],
-                                pv_config["results_path"]["optical_depth"])
+    results_path = os.path.join(home,pvrad_config["results_path"]["main"],
+                                pvrad_config["results_path"]["optical_depth"])
     pv_folder_label = os.path.join(results_path,folder_label)
             
     return pv_systems, pyr_folder_label, pv_folder_label
@@ -611,7 +611,7 @@ def extract_aod_from_lut(name,pv_station,nameaoddata,namemeasdata,rt_config,subs
         else:
             df_aod_substat = pd.merge(df_aod.loc[:,pd.IndexSlice[:,["Aeronet","sun","libradtran"]]],
                           pv_station[namemeasdata].loc[:,pd.IndexSlice[["Etotpoa_pv_inv","error_Etotpoa_pv_inv",
-                                     "k_index_poa","cloud_fraction_poa"],substat]],
+                                     "k_index_poa","cloud_fraction_poa","theta_IA"],substat]],
                                    how='left',left_index=True,right_index=True)
                 
         radtypes = []
@@ -1040,7 +1040,7 @@ for campaign in campaigns:
                     #Use LUT to extract aod and plot time series
                     pvsys[key][name_df_aod_result] = extract_aod_from_lut(key,pvsys[key],name_df_aodlut,
                                     name_df_hires,rt_config,pv_substat_dict,angle_arrays,const_opt,
-                                    year.split('_')[-1],pv_results_folder)    
+                                    year.split('_')[-1])    
                                 
                 else:
                     print(f"No {timeres} data for {key}, {substat_type} in {year.split('_')[-1]}")

@@ -803,7 +803,7 @@ def extract_cod_irradiance_comps_from_lut(name,pv_station,namecoddata,nameclears
             df_cod_substat = pd.merge(pd.merge(df_cod.loc[:,pd.IndexSlice[:,["sun","libradtran",substat]]],
                     df_clearsky.loc[:,pd.IndexSlice[:,"libradtran"]],how='left',left_index=True,right_index=True),
                     pv_station[namemeasdata].loc[:,pd.IndexSlice[["Etotpoa_pv_inv",
-                    "error_Etotpoa_pv_inv","k_index_poa","cloud_fraction_poa","Etotpoa_pv_clear_Wm2"],
+                    "error_Etotpoa_pv_inv","k_index_poa","cloud_fraction_poa","Etotpoa_pv_clear_Wm2","theta_IA"],
                      substat]],how='left',left_index=True,right_index=True)
             
         #Average cloud fraction
@@ -1238,7 +1238,7 @@ for campaign in campaigns:
             stations = 'all'
     else:
         #Stations for which to perform inversion
-        stations = "PV_12" #pyr_config["stations"]
+        stations = "MS_02" #pyr_config["stations"]
 
     opt_dict = pyr_config["optics"]
     optics = collections.namedtuple('optics', 'kappa L')
@@ -1365,8 +1365,7 @@ for campaign in campaigns:
             
             #Save results
             results_path = generate_folders(rt_config,pvcal_config,pvrad_config,homepath)
-            save_results(key,pvsys[key],name_df_combine,campaign,rt_config,pyr_config,
-                         pvcal_config,pvrad_config,
-                         timeres,results_path)
+            save_results(key,pvsys[key],name_df_combine,campaign,
+                      timeres,results_path)
     
     

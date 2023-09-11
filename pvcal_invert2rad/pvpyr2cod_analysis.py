@@ -2522,6 +2522,11 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                     mad = abs(delta_cod_pyr_apollo).mean()
                     mbe = delta_cod_pyr_apollo.mean()
                     
+                    mean_obs = pv_station[dfname]\
+                                            [(f'cot_AP_{str_window_avg}_avg','apollo', key)].mean(axis=0)
+                    rrmse = rmse/mean_obs*100
+                    rmbe = mbe/mean_obs*100
+                    
                     delta_max_plus = delta_cod_pyr_apollo.max()
                     delta_max_minus = delta_cod_pyr_apollo.min()                
                     
@@ -2531,15 +2536,17 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                     
                     stats[substat].update({f"n_delta_pyr_{radtype}_apollo":n_delta_pyr_apollo})
                     stats[substat].update({f"RMSE_COD_pyr_{radtype}_apollo_Wm2":rmse})
+                    stats[substat].update({f"rRMSE_COD_pyr_{radtype}_apollo_%":rrmse})
                     stats[substat].update({f"MAD_COD_pyr_{radtype}_apollo_Wm2":mad})
                     stats[substat].update({f"MBE_COD_pyr_{radtype}_apollo_Wm2":mbe})
+                    stats[substat].update({f"rMBE_COD_pyr_{radtype}_apollo_%":rmbe})
                     stats[substat].update({f"max_Delta_COD_plus_pyr_{radtype}_apollo_Wm2":delta_max_plus})
                     stats[substat].update({f"max_Delta_COD_minus_pyr_{radtype}_apollo_Wm2":delta_max_minus})
                     
                     print(f"{key}, {yrname}: statistics at {str_window_avg} calculated with {n_delta_pyr_apollo} measurements")
-                    print(f"RMSE for COD inverted from {substat}, {radtype} compared to APOLLO is {rmse}")
-                    print(f"MAE for COD inverted from {substat}, {radtype} compared to APOLLO is {mad}")
-                    print(f"MBE for COD inverted from {substat}, {radtype} compared to APOLLO is {mbe}")
+                    print(f"RMSE for COD inverted from {substat}, {radtype} compared to APOLLO is {rmse:.2f} ({rrmse:.1f}%)")
+                    print(f"MAE for COD inverted from {substat}, {radtype} compared to APOLLO is {mad:.2f}")
+                    print(f"MBE for COD inverted from {substat}, {radtype} compared to APOLLO is {mbe:.2f} ({rmbe:.1f}%)")
                     
                     #Assign delta to the dataframe
                     pv_station[dfname][(f"delta_COD_pyr_{radtype}_apollo_Wm2",substat,key)] = \
@@ -2564,6 +2571,11 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                         mad = abs(delta_cod_pyr_seviri).mean()
                         mbe = delta_cod_pyr_seviri.mean()
                         
+                        mean_obs = pv_station[dfname]\
+                                            [(f'COD_500_{str_window_avg}_avg','seviri', key)].mean(axis=0)
+                        rrmse = rmse/mean_obs*100
+                        rmbe = mbe/mean_obs*100
+                        
                         delta_max_plus = delta_cod_pyr_seviri.max()
                         delta_max_minus = delta_cod_pyr_seviri.min()                
                         
@@ -2571,15 +2583,17 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                         
                         stats[substat].update({f"n_delta_pyr_{radtype}_seviri":n_delta_pyr_seviri})
                         stats[substat].update({f"RMSE_COD_pyr_{radtype}_seviri_Wm2":rmse})
+                        stats[substat].update({f"rRMSE_COD_pyr_{radtype}_seviri_%":rrmse})
                         stats[substat].update({f"MAD_COD_pyr_{radtype}_seviri_Wm2":mad})
                         stats[substat].update({f"MBE_COD_pyr_{radtype}_seviri_Wm2":mbe})
+                        stats[substat].update({f"rMBE_COD_pyr_{radtype}_seviri_%":rmbe})
                         stats[substat].update({f"max_Delta_COD_plus_pyr_{radtype}_seviri_Wm2":delta_max_plus})
                         stats[substat].update({f"max_Delta_COD_minus_pyr_{radtype}_seviri_Wm2":delta_max_minus})
                         
                         print(f"{key}, {yrname}: statistics at {str_window_avg} calculated with {n_delta_pyr_seviri} measurements")
-                        print(f"RMSE for COD inverted from {substat}, {radtype} compared to SEVIRI is {rmse}")
-                        print(f"MAE for COD inverted from {substat}, {radtype} compared to SEVIRI is {mad}")
-                        print(f"MBE for COD inverted from {substat}, {radtype} compared to SEVIRI is {mbe}")
+                        print(f"RMSE for COD inverted from {substat}, {radtype} compared to SEVIRI is {rmse:.2f} ({rrmse:.1f}%)")
+                        print(f"MAE for COD inverted from {substat}, {radtype} compared to SEVIRI is {mad:.2f}")
+                        print(f"MBE for COD inverted from {substat}, {radtype} compared to SEVIRI is {mbe:.2f} ({rmbe:.1f}%)")
                         
                         #Assign delta to the dataframe
                         pv_station[dfname][(f"delta_COD_pyr_{radtype}_seviri_Wm2",substat,key)] = \
@@ -2599,6 +2613,11 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                         mad = abs(delta_cod_pyr_cosmo).mean()
                         mbe = delta_cod_pyr_cosmo.mean()
                         
+                        mean_obs = pv_station[dfname]\
+                                            [('COD_tot_600_avg','cosmo', key)].mean(axis=0)
+                        rrmse = rmse/mean_obs*100
+                        rmbe = mbe/mean_obs*100
+                        
                         delta_max_plus = delta_cod_pyr_cosmo.max()
                         delta_max_minus = delta_cod_pyr_cosmo.min()                
                         
@@ -2606,15 +2625,17 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                         
                         stats[substat].update({f"n_delta_pyr_{radtype}_cosmo":n_delta_pyr_cosmo})
                         stats[substat].update({f"RMSE_COD_pyr_{radtype}_cosmo_Wm2":rmse})
+                        stats[substat].update({f"rRMSE_COD_pyr_{radtype}_cosmo_%":rrmse})
                         stats[substat].update({f"MAD_COD_pyr_{radtype}_cosmo_Wm2":mad})
                         stats[substat].update({f"MBE_COD_pyr_{radtype}_cosmo_Wm2":mbe})
+                        stats[substat].update({f"rMBE_COD_pyr_{radtype}_cosmo_%":rmbe})
                         stats[substat].update({f"max_Delta_COD_plus_pyr_{radtype}_cosmo_Wm2":delta_max_plus})
                         stats[substat].update({f"max_Delta_COD_minus_pyr_{radtype}_cosmo_Wm2":delta_max_minus})
                         
                         print(f"{key}, {yrname}: statistics at {str_window_avg} calculated with {n_delta_pyr_cosmo} measurements")
-                        print(f"RMSE for COD inverted from {substat}, {radtype} compared to COSMO is {rmse}")
-                        print(f"MAE for COD inverted from {substat}, {radtype} compared to COSMO is {mad}")
-                        print(f"MBE for COD inverted from {substat}, {radtype} compared to COSMO is {mbe}")
+                        print(f"RMSE for COD inverted from {substat}, {radtype} compared to COSMO is {rmse:.2f} ({rrmse:.1f}%)")
+                        print(f"MAE for COD inverted from {substat}, {radtype} compared to COSMO is {mad:.2f}")
+                        print(f"MBE for COD inverted from {substat}, {radtype} compared to COSMO is {mbe:.2f} ({rmbe:.1f}%)")
                     
                         #Assign delta to the dataframe
                         pv_station[dfname][(f"delta_COD_pyr_{radtype}_cosmo_Wm2",substat,key)] = \
@@ -2659,6 +2680,11 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                         mad = abs(delta_cod_pv_apollo).mean()
                         mbe = delta_cod_pv_apollo.mean()
                         
+                        mean_obs = pv_station[dfname]\
+                                                [(f'cot_AP_{str_window_avg}_avg','apollo', key)].mean(axis=0)
+                        rrmse = rmse/mean_obs*100
+                        rmbe = mbe/mean_obs*100
+                        
                         delta_max_plus = delta_cod_pv_apollo.max()
                         delta_max_minus = delta_cod_pv_apollo.min()                
                         
@@ -2668,15 +2694,17 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                         
                         stats[substat].update({"n_delta_pv_apollo":n_delta_pv_apollo})
                         stats[substat].update({"RMSE_COD_pv_apollo_Wm2":rmse})
+                        stats[substat].update({"rRMSE_COD_pv_apollo_%":rrmse})
                         stats[substat].update({"MAD_COD_pv_apollo_Wm2":mad})
                         stats[substat].update({"MBE_COD_pv_apollo_Wm2":mbe})
+                        stats[substat].update({"rMBE_COD_pv_apollo_%":rmbe})
                         stats[substat].update({"max_Delta_COD_plus_pv_apollo_Wm2":delta_max_plus})
                         stats[substat].update({"max_Delta_COD_minus_pv_apollo_Wm2":delta_max_minus})
                         
                         print(f"{key}, {yrname}: statistics at {str_window_avg} calculated with {n_delta_pv_apollo} measurements")
-                        print(f"RMSE for COD inverted from {substat} compared to APOLLO is {rmse}")
-                        print(f"MAE for COD inverted from {substat} compared to APOLLO is {mad}")
-                        print(f"MBE for COD inverted from {substat} compared to APOLLO is {mbe}")
+                        print(f"RMSE for COD inverted from {substat} compared to APOLLO is {rmse:.2f} ({rrmse:.1f}%)")
+                        print(f"MAE for COD inverted from {substat} compared to APOLLO is {mad:.2f}")
+                        print(f"MBE for COD inverted from {substat} compared to APOLLO is {mbe:.2f} ({rmbe:.1f}%)")
                         
                         #Assign delta to the dataframe
                         pv_station[dfname][("delta_COD_pv_apollo_Wm2",substat,key)] = \
@@ -2701,6 +2729,11 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                             mad = abs(delta_cod_pv_seviri).mean()
                             mbe = delta_cod_pv_seviri.mean()
                             
+                            mean_obs = pv_station[dfname]\
+                                                    [(f'COD_500_{str_window_avg}_avg','seviri', key)].mean(axis=0)
+                            rrmse = rmse/mean_obs*100
+                            rmbe = mbe/mean_obs*100
+                            
                             delta_max_plus = delta_cod_pv_seviri.max()
                             delta_max_minus = delta_cod_pv_seviri.min()                
                             
@@ -2708,15 +2741,17 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                             
                             stats[substat].update({"n_delta_pv_seviri":n_delta_pv_seviri})
                             stats[substat].update({"RMSE_COD_pv_seviri_Wm2":rmse})
+                            stats[substat].update({"rRMSE_COD_pv_seviri_%":rrmse})
                             stats[substat].update({"MAD_COD_pv_seviri_Wm2":mad})
                             stats[substat].update({"MBE_COD_pv_seviri_Wm2":mbe})
+                            stats[substat].update({"rMBE_COD_pv_seviri_%":rmbe})
                             stats[substat].update({"max_Delta_COD_plus_pv_seviri_Wm2":delta_max_plus})
                             stats[substat].update({"max_Delta_COD_minus_pv_seviri_Wm2":delta_max_minus})
                             
                             print(f"{key}, {yrname}: statistics at {str_window_avg} calculated with {n_delta_pv_seviri} measurements")
-                            print(f"RMSE for COD inverted from {substat} compared to SEVIRI is {rmse}")
-                            print(f"MAE for COD inverted from {substat} compared to SEVIRI is {mad}")
-                            print(f"MBE for COD inverted from {substat} compared to SEVIRI is {mbe}")
+                            print(f"RMSE for COD inverted from {substat} compared to SEVIRI is {rmse:.2f} ({rrmse:.1f}%)")
+                            print(f"MAE for COD inverted from {substat} compared to SEVIRI is {mad:.2f}")
+                            print(f"MBE for COD inverted from {substat} compared to SEVIRI is {mbe:.2f} ({rmbe:.1f}%)")
                             
                             #Assign delta to the dataframe
                             pv_station[dfname][("delta_COD_pv_seviri_Wm2",substat,key)] = \
@@ -2736,6 +2771,11 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                             mad = abs(delta_cod_pv_cosmo).mean()
                             mbe = delta_cod_pv_cosmo.mean()
                             
+                            mean_obs = pv_station[dfname]\
+                                                [('COD_tot_600_avg','cosmo', key)].mean(axis=0)
+                            rrmse = rmse/mean_obs*100
+                            rmbe = mbe/mean_obs*100
+                            
                             delta_max_plus = delta_cod_pv_cosmo.max()
                             delta_max_minus = delta_cod_pv_cosmo.min()                
                             
@@ -2743,15 +2783,17 @@ def calc_statistics_cod(key,pv_station,year,pvrad_config,pyrcal_config,window_av
                             
                             stats[substat].update({"n_delta_pv_cosmo":n_delta_pv_cosmo})
                             stats[substat].update({"RMSE_COD_pv_cosmo_Wm2":rmse})
+                            stats[substat].update({"rRMSE_COD_pv_cosmo_%":rrmse})
                             stats[substat].update({"MAD_COD_pv_cosmo_Wm2":mad})
                             stats[substat].update({"MBE_COD_pv_cosmo_Wm2":mbe})
+                            stats[substat].update({"rMBE_COD_pv_cosmo_%":rmbe})
                             stats[substat].update({"max_Delta_COD_plus_pv_cosmo_Wm2":delta_max_plus})
                             stats[substat].update({"max_Delta_COD_minus_pv_cosmo_Wm2":delta_max_minus})
                             
                             print(f"{key}, {yrname}: statistics at {str_window_avg} calculated with {n_delta_pv_cosmo} measurements")
-                            print(f"RMSE for COD inverted from {substat} compared to COSMO is {rmse}")
-                            print(f"MAE for COD inverted from {substat} compared to COSMO is {mad}")
-                            print(f"MBE for COD inverted from {substat} compared to COSMO is {mbe}")
+                            print(f"RMSE for COD inverted from {substat} compared to COSMO is {rmse:.2f} ({rrmse:.1f}%)")
+                            print(f"MAE for COD inverted from {substat} compared to COSMO is {mad:.2f}")
+                            print(f"MBE for COD inverted from {substat} compared to COSMO is {mbe:.2f} ({rmbe:.1f}%)")
                         
                             #Assign delta to the dataframe
                             pv_station[dfname][("delta_COD_pv_cosmo_Wm2",substat,key)] = \
@@ -2911,6 +2953,10 @@ def combined_stats(dict_combo_stats,year,window_avgs):
                     mad = abs(df_delta_all[f"delta_COD_pyr_{radtype}_{data_type}_Wm2"].stack()).mean()
                     mbe = df_delta_all[f"delta_COD_pyr_{radtype}_{data_type}_Wm2"].stack().mean()
                     
+                    mean_obs = df_delta_all[f"COD_{data_type}_ref"].stack().mean()
+                    rrmse = rmse/mean_obs*100
+                    rmbe = mbe/mean_obs*100                    
+                    
                     delta_max_plus = df_delta_all[f"delta_COD_pyr_{radtype}_{data_type}_Wm2"].stack().max()
                     delta_max_minus = df_delta_all[f"delta_COD_pyr_{radtype}_{data_type}_Wm2"].stack().min()
                     
@@ -2918,17 +2964,19 @@ def combined_stats(dict_combo_stats,year,window_avgs):
                     
                     dict_combo_stats[window_avg].update({f"n_delta_pyr_{radtype}_{data_type}":n_delta_pyr})
                     dict_combo_stats[window_avg].update({f"RMSE_COD_pyr_{radtype}_{data_type}_Wm2":rmse})
+                    dict_combo_stats[window_avg].update({f"rRMSE_COD_pyr_{radtype}_{data_type}_%":rrmse})
                     dict_combo_stats[window_avg].update({f"MAD_COD_pyr_{radtype}_{data_type}_Wm2":mad})
                     dict_combo_stats[window_avg].update({f"MBE_COD_pyr_{radtype}_{data_type}_Wm2":mbe})
+                    dict_combo_stats[window_avg].update({f"rMBE_COD_pyr_{radtype}_{data_type}_%":rmbe})
                     dict_combo_stats[window_avg].update({f"max_Delta_COD_pyr_{radtype}_{data_type}_plus_Wm2":delta_max_plus})
                     dict_combo_stats[window_avg].update({f"max_Delta_COD_pyr_{radtype}_{data_type}_minus_Wm2":delta_max_minus})
                     
                     print(f"{year}: combined statistics at {window_avg} from "\
                           f"{dict_combo_stats[f'df_delta_all_pyr_{window_avg}'].columns.levels[2].to_list()}"\
                           f" calculated with {n_delta_pyr} measurements")
-                    print(f"Combined RMSE for GHI from {radtype} Pyranometers in {year} is {rmse}")
-                    print(f"Combined MAE for GHI from {radtype} Pyranometers in {year} is {mad}")
-                    print(f"Combined MBE for GHI from {radtype} Pyranometers in {year} is {mbe}")     
+                    print(f"Combined RMSE for GHI from {radtype} Pyranometers in {year} is {rmse:.2f} ({rrmse:.1f}%)")
+                    print(f"Combined MAE for GHI from {radtype} Pyranometers in {year} is {mad:.2f}")
+                    print(f"Combined MBE for GHI from {radtype} Pyranometers in {year} is {mbe:.2f} ({rmbe:.1f}%)")     
         
         df_delta_all = dict_combo_stats[f"df_delta_all_pv_{window_avg}"].stack(dropna=True)        
         if window_avg not in dict_combo_stats:
@@ -2939,6 +2987,10 @@ def combined_stats(dict_combo_stats,year,window_avgs):
                 mad = abs(df_delta_all[f"delta_COD_pv_{data_type}_Wm2"].stack()).mean()
                 mbe = df_delta_all[f"delta_COD_pv_{data_type}_Wm2"].stack().mean()
                 
+                mean_obs = df_delta_all[f"COD_{data_type}_ref"].stack().mean()
+                rrmse = rmse/mean_obs*100
+                rmbe = mbe/mean_obs*100  
+                
                 delta_max_plus = df_delta_all[f"delta_COD_pv_{data_type}_Wm2"].stack().max()
                 delta_max_minus = df_delta_all[f"delta_COD_pv_{data_type}_Wm2"].stack().min()
                 
@@ -2946,17 +2998,19 @@ def combined_stats(dict_combo_stats,year,window_avgs):
                 
                 dict_combo_stats[window_avg].update({f"n_delta_pv_{data_type}":n_delta_pv})
                 dict_combo_stats[window_avg].update({f"RMSE_COD_pv_{data_type}_Wm2":rmse})
+                dict_combo_stats[window_avg].update({f"rRMSE_COD_pv_{data_type}_%":rrmse})
                 dict_combo_stats[window_avg].update({f"MAD_COD_pv_{data_type}_Wm2":mad})
                 dict_combo_stats[window_avg].update({f"MBE_COD_pv_{data_type}_Wm2":mbe})
+                dict_combo_stats[window_avg].update({f"rMBE_COD_pv_{data_type}_%":rmbe})
                 dict_combo_stats[window_avg].update({f"max_Delta_COD_pv_{data_type}_plus_Wm2":delta_max_plus})
                 dict_combo_stats[window_avg].update({f"max_Delta_COD_pv_{data_type}_minus_Wm2":delta_max_minus})
                 
                 print(f"{year}: combined statistics at {window_avg} from "\
                       f"{dict_combo_stats[f'df_delta_all_pv_{window_avg}'].columns.levels[2].to_list()}"\
                       f" calculated with {n_delta_pv} measurements")
-                print(f"Combined RMSE for GHI from PV in {year} is {rmse}")
-                print(f"Combined MAE for GHI from PV in {year} is {mad}")
-                print(f"Combined MBE for GHI from PV in {year} is {mbe}")                                      
+                print(f"Combined RMSE for GHI from PV in {year} is {rmse:.2f} ({rrmse:.1f}%)")
+                print(f"Combined MAE for GHI from PV in {year} is {mad:.2f}")
+                print(f"Combined MBE for GHI from PV in {year} is {mbe:.2f} ({rmbe:.1f}%)")                                      
 
 
 def plot_all_cod_combined_scatter(dict_stats,list_stations,pvrad_config,T_model,folder,title_flag,window_avgs):
@@ -3047,8 +3101,8 @@ def plot_all_cod_combined_scatter(dict_stats,list_stations,pvrad_config,T_model,
             #ax.set_title(f"{timeres}",ifontsize=14)
                             
             print(f"Using {dict_stats[year][timeres][f'n_delta_pv_{data_type}']} data points for {timeres}, {year} plot")
-            ax.annotate(rf"MBE = {dict_stats[year][timeres][f'MBE_COD_pv_{data_type}_Wm2']:.2f}" "\n" \
-                        rf"RMSE = {dict_stats[year][timeres][f'RMSE_COD_pv_{data_type}_Wm2']:.2f}" "\n"\
+            ax.annotate(rf"MBE = {dict_stats[year][timeres][f'MBE_COD_pv_{data_type}_Wm2']:.2f} ({dict_stats[year][timeres][f'rMBE_COD_pv_{data_type}_%']:.1f} %)" "\n" \
+                        rf"RMSE = {dict_stats[year][timeres][f'RMSE_COD_pv_{data_type}_Wm2']:.2f} ({dict_stats[year][timeres][f'rRMSE_COD_pv_{data_type}_%']:.1f} %)" "\n"\
                         rf"n = ${dict_stats[year][timeres][f'n_delta_pv_{data_type}']:.0f}$",
                      xy=(0.05,0.82),xycoords='axes fraction',fontsize=9,color='k',
                      bbox = dict(facecolor='lightgrey',edgecolor='none', alpha=0.5),
@@ -3139,8 +3193,8 @@ def plot_all_cod_combined_scatter(dict_stats,list_stations,pvrad_config,T_model,
                 #ax.set_title(f"{timeres}",fontsize=14)
                                 
                 print(f"Using {dict_stats[year][timeres][f'n_delta_pyr_{radtype}_{data_type}']} data points for {timeres}, {year} plot")
-                ax.annotate(rf"MBE = {dict_stats[year][timeres][f'MBE_COD_pyr_{radtype}_{data_type}_Wm2']:.2f}" "\n" \
-                            rf"RMSE = {dict_stats[year][timeres][f'RMSE_COD_pyr_{radtype}_{data_type}_Wm2']:.2f}" "\n"\
+                ax.annotate(rf"MBE = {dict_stats[year][timeres][f'MBE_COD_pyr_{radtype}_{data_type}_Wm2']:.2f} ({dict_stats[year][timeres][f'rMBE_COD_pyr_{radtype}_{data_type}_%']:.1f} %)" "\n" \
+                            rf"RMSE = {dict_stats[year][timeres][f'RMSE_COD_pyr_{radtype}_{data_type}_Wm2']:.2f} ({dict_stats[year][timeres][f'rRMSE_COD_pyr_{radtype}_{data_type}_%']:.1f} %)" "\n"\
                             rf"n = ${dict_stats[year][timeres][f'n_delta_pyr_{radtype}_{data_type}']:.0f}$",
                          xy=(0.05,0.82),xycoords='axes fraction',fontsize=9,color='k',
                          bbox = dict(facecolor='lightgrey',edgecolor='none', alpha=0.5),
