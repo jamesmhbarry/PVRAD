@@ -12,6 +12,7 @@ import numpy as np
 from file_handling_functions import *
 from rt_functions import *
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 #from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.dates as mdates
 #from matplotlib.gridspec import GridSpec
@@ -913,15 +914,14 @@ def plot_cloud_fraction(key,pv_station,year,pvrad_config,folder):
                                                  + substat + '_' + iday + '.png'))
                         plt.close(fig)
 
-def plot_mean_spectral_fit(key,pv_station,year,pvrad_config,folder,title_flag):
+def plot_mean_spectral_fit(key,pv_station,pvrad_config,folder,title_flag):
     """
     
 
     Parameters
     ----------
     key : string, name of station
-    pv_station : dictionary with all information and data from PV station
-    year : string with current year (2018 or 2019)        
+    pv_station : dictionary with all information and data from PV station    
     pvrad_config: dictionary with inversion configuration            
     folder : string with folder for saving results            
     title_flag : boolean for plot titles
@@ -959,119 +959,133 @@ def plot_mean_spectral_fit(key,pv_station,year,pvrad_config,folder,title_flag):
             if substat not in substat_dirs:
                 os.mkdir(plotpath)
     
-            dffit = pv_station["substations_pv"][substat_type]["data"][substat][f"df_spectral_fit_{year}"]
-            dffit = dffit.loc[dffit.cos_IA != 0]
-            dffit["cos_diff_phi"] = np.cos(np.deg2rad(dffit.diff_phi))
-            dffit["phi0_real"] = np.fmod(dffit.phi0 + 180,360)
-            dffit["cos_product"] = np.sign(np.sin(np.deg2rad(dffit.diff_phi)))\
-                *np.cos(np.pi/2 - np.arccos(dffit.cos_IA))
-            days = pd.to_datetime(dffit.index.date).unique().strftime('%Y-%m-%d')
-            
             if 'opt_pars' in pv_station["substations_pv"][substat_type]["data"][substat]:
-                opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['opt_pars'] 
+                    opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['opt_pars'] 
             else:
                 opt_pars = pv_station["substations_pv"][substat_type]["data"][substat]['ap_pars'] 
-                    
+                        
             tilt = np.rad2deg(opt_pars[0][1])
             azi = np.fmod(np.rad2deg(opt_pars[1][1])+180,360)
-            
-            dfs = dffit.groupby(dffit.index.time)
-            dfs_times = [group for group in dfs]
-            # bins_cos = np.linspace(-1.,1.,51)
-            # dfs_bins = dffit.groupby(pd.cut(dffit.cos_product,bins_cos))
-            
-            df_mean = dfs.mean()    
-            df_mean["cos_product_mean"] = np.sign(np.sin(np.deg2rad(df_mean.diff_phi)))\
-                *np.rad2deg(np.arccos(df_mean.cos_IA))
-            sza_index = df_mean.loc[df_mean.sza <= sza_limit].index 
-            x_dt_mean = [datetime.datetime.combine(datetime.date(int(year),1,1), t) for t in df_mean.index]
-            sza_dt = [datetime.datetime.combine(datetime.date(int(year),1,1), t) for t in sza_index]
-            
-            #Fit function for mean values
-            #split into morning and evening    
-            t_zenith = df_mean.iloc[df_mean.cos_IA.argmax()].name
-            df_mean_am = df_mean.loc[(df_mean.sza <= sza_limit) & (df_mean.index <= t_zenith)]
-            df_mean_pm = df_mean.loc[(df_mean.sza <= sza_limit) & (df_mean.index > t_zenith)]            
-            t_zenith_dt = datetime.datetime.combine(datetime.date(int(year),1,1), t_zenith)
-            theta_max = df_mean.loc[t_zenith,"cos_product_mean"]
-            
-            mean_params = {}    
-            print(f"Performing mean fit for {year}")
-            for df,time in [(df_mean_am,"AM"),(df_mean_pm,"PM")]:
                 
-                #n_h2o_data_mean = df.n_h2o_mm
-                ydata_mean = np.log(df.ratio_Etotpoa)
-                cos_IA_mean = df.cos_IA
-                #diff_phi_mean = df.diff_phi        
+            fig, axs = plt.subplots(2,len(pvrad_config["calibration_source"]),figsize=(16,12),sharey='all',sharex='col',
+                                    )
+            for k, campaign in enumerate(pvrad_config["calibration_source"]):    
+                year = "mk_" + campaign.split('_')[1]
+                yrname = year.split('_')[-1]        
                 
-                #if time == "AM":
-                fitfunc = lambda p, c: p[0] + p[1]/c + p[2]/c**2 # + p[3]/c**3
-                # elif time == "PM":
-                #     fitfunc = lambda p, c: p[0] + p[1]/c) + p[2]*np.log(1/c**2) + p[3]*np.log(1/c**3) # - p[2] * w**2 / c - p[1] * w**3 / c
+                dffit = pv_station["substations_pv"][substat_type]["data"][substat][f"df_spectral_fit_{yrname}"]
+                dffit = dffit.loc[dffit.cos_IA != 0]
+                dffit["cos_diff_phi"] = np.cos(np.deg2rad(dffit.diff_phi))
+                dffit["phi0_real"] = np.fmod(dffit.phi0 + 180,360)
+                dffit["cos_product"] = np.sign(np.sin(np.deg2rad(dffit.diff_phi)))\
+                    *np.cos(np.pi/2 - np.arccos(dffit.cos_IA))
+                #days = pd.to_datetime(dffit.index.date).unique().strftime('%Y-%m-%d')                                
+                
+                dfs = dffit.groupby(dffit.index.time)
+                #dfs_times = [group for group in dfs]
+                # bins_cos = np.linspace(-1.,1.,51)
+                # dfs_bins = dffit.groupby(pd.cut(dffit.cos_product,bins_cos))
+                
+                df_mean = dfs.mean()    
+                df_mean["cos_product_mean"] = np.sign(np.sin(np.deg2rad(df_mean.diff_phi)))\
+                    *np.rad2deg(np.arccos(df_mean.cos_IA))
+                sza_index = df_mean.loc[df_mean.sza <= sza_limit].index 
+                x_dt_mean = [datetime.datetime.combine(datetime.date(int(yrname),1,1), t) for t in df_mean.index]
+                sza_dt = [datetime.datetime.combine(datetime.date(int(yrname),1,1), t) for t in sza_index]
+                
+                #Fit function for mean values
+                #split into morning and evening    
+                t_zenith = df_mean.iloc[df_mean.cos_IA.argmax()].name
+                df_mean_am = df_mean.loc[(df_mean.sza <= sza_limit) & (df_mean.index <= t_zenith)]
+                df_mean_pm = df_mean.loc[(df_mean.sza <= sza_limit) & (df_mean.index > t_zenith)]            
+                t_zenith_dt = datetime.datetime.combine(datetime.date(int(yrname),1,1), t_zenith)
+                theta_max = df_mean.loc[t_zenith,"cos_product_mean"]
+                
+                mean_params = {}    
+                print(f"Performing mean fit for {yrname}")
+                for df,time in [(df_mean_am,"AM"),(df_mean_pm,"PM")]:
                     
-                errfunc = lambda p, c, y: y - fitfunc(p, c)
-                pinit = [1.,1.,1.]
-                
-                params = np.zeros(len(pinit)) #(len(df_am),,        
-                params = optimize.least_squares(errfunc,pinit,args=(cos_IA_mean,ydata_mean))["x"]  #df.n_h2o_mm
-                mean_params.update({time:params})
-                
-                df_mean.loc[df.index,"fit_ratio_Etotpoa_mean"] = np.exp(fitfunc(params,cos_IA_mean))                
-                #dfs_times = (*dfs_times 
-                # x_dt_time = [datetime.datetime.combine(datetime.date(int(year),1,1), t) for t in df.index]
-            
-            fig, axs = plt.subplots(2,1,figsize=(12,12),sharey='all',sharex='all')
-            fig.subplots_adjust(hspace=0.1)
-            #fig.subplots_adjust(top=0.92)
-            for i, (xvar, xlabel) in enumerate([("n_h2o_mm",'Precipitable water (mm)'),("AOD_500",r'AOD$_\mathrm{500nm}$')]):
-                print(f"Plotting mean results over time and {xvar} in {year}")
-                ax = axs.flatten()[i]
-                ax.plot(x_dt_mean,df_mean["ratio_Etotpoa"],color='k',linewidth=2,label=rf'$\langle$GTI$\rangle^{{\theta = {tilt:.2f}}}_{{\phi = {azi:.2f}}}$')
-                ax.plot(x_dt_mean,df_mean["ratio_Etotdown"],'k--',label=r'$\langle$GHI$\rangle$')
-                
-                ax.xaxis.set_major_locator(mdates.HourLocator(interval=2))
-                ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))    
-                                        
-                ax.set_xlim([x_dt_mean[0], x_dt_mean[-1]])#, adjustable='box')
-                ax.axvspan(x_dt_mean[0],sza_dt[0],alpha=0.2,color='gray')
-                ax.axvspan(sza_dt[-1],x_dt_mean[-1],alpha=0.2,color='gray')                                      
-                
-                x_dt = [datetime.datetime.combine(datetime.date(int(year),1,1), t) for t in dffit.index.time]
-                sc = ax.scatter(x_dt,dffit.ratio_Etotpoa,10,c=dffit[xvar],cmap='jet')
-                # X, Y, Z = grid(x_dt, dffit.ratio_Etotpoa, dffit[xvar])                
-                # sc = ax.contourf(x_dt,dffit.ratio_Etotpoa,dffit[xvar],cmap='jet')
-                # #ax.scatter(x_dt,dffit.ratio_Etotdown,3,c=dffit.n_h2o_mm,marker='x',cmap='jet')
-                cb = plt.colorbar(sc,ax=ax)
-                cb.set_label(xlabel)        
-                
-                #Plot the fit to the mean ratio
-                ax.plot(x_dt_mean,df_mean.fit_ratio_Etotpoa_mean,color = 'r',label=r'$\langle$GTI$\rangle_\mathrm{fit}$',
-                        linestyle='--')
+                    #n_h2o_data_mean = df.n_h2o_mm
+                    ydata_mean = np.log(df.ratio_Etotpoa)
+                    cos_IA_mean = df.cos_IA
+                    #diff_phi_mean = df.diff_phi        
+                    
+                    #if time == "AM":
+                    fitfunc = lambda p, c: p[0] + p[1]/c + p[2]/c**2 # + p[3]/c**3
+                    # elif time == "PM":
+                    #     fitfunc = lambda p, c: p[0] + p[1]/c) + p[2]*np.log(1/c**2) + p[3]*np.log(1/c**3) # - p[2] * w**2 / c - p[1] * w**3 / c
                         
-                if i == 0:    
+                    errfunc = lambda p, c, y: y - fitfunc(p, c)
+                    pinit = [1.,1.,1.]
+                    
+                    params = np.zeros(len(pinit)) #(len(df_am),,        
+                    params = optimize.least_squares(errfunc,pinit,args=(cos_IA_mean,ydata_mean))["x"]  #df.n_h2o_mm
+                    mean_params.update({time:params})
+                    
+                    df_mean.loc[df.index,"fit_ratio_Etotpoa_mean"] = np.exp(fitfunc(params,cos_IA_mean))                
+                    #dfs_times = (*dfs_times 
+                    # x_dt_time = [datetime.datetime.combine(datetime.date(int(yrname),1,1), t) for t in df.index]
+                                                
+                #fig.subplots_adjust(top=0.92)
+                for i, (xvar, xlabel) in enumerate([("n_h2o_mm",'Precipitable water (mm)'),("AOD_500",r'AOD$_\mathrm{500nm}$')]):
+                    print(f"Plotting mean results over time and {xvar} in {yrname}")
+                    ax = axs.flatten()[k+i*2]
+                    ax.plot(x_dt_mean,df_mean["ratio_Etotpoa"],color='k',linewidth=2,label=rf'$\langle$GTI$\rangle^{{\theta = {tilt:.2f}}}_{{\phi = {azi:.2f}}}$')
+                    ax.plot(x_dt_mean,df_mean["ratio_Etotdown"],'k--',label=r'$\langle$GHI$\rangle$')
+                    
+                    ax.xaxis.set_major_locator(mdates.HourLocator(interval=2))
+                    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))    
+                                            
+                    ax.set_xlim([x_dt_mean[0], x_dt_mean[-1]])#, adjustable='box')
+                    ax.axvspan(x_dt_mean[0],sza_dt[0],alpha=0.2,color='gray')
+                    ax.axvspan(sza_dt[-1],x_dt_mean[-1],alpha=0.2,color='gray')                                      
+                    
+                    x_dt = [datetime.datetime.combine(datetime.date(int(yrname),1,1), t) for t in dffit.index.time]
+                    sc = ax.scatter(x_dt,dffit.ratio_Etotpoa,15,c=dffit[xvar])#,cmap='plasma')                           
+                    
+                    #Plot the fit to the mean ratio
+                    ax.plot(x_dt_mean,df_mean.fit_ratio_Etotpoa_mean,color = 'r',label=r'$\langle$GTI$\rangle_\mathrm{fit}$',
+                            linestyle='--',linewidth=2)
+                                                
                     axtop = ax.twiny()                    
                     axtop.set_xticks(ax.get_xticks())        
                     axtop.set_xbound(ax.get_xbound())
-                    szalabels = np.round(df_mean.loc[pd.to_datetime(ax.get_xticks(),unit='D').time,'cos_product_mean'],2)
-                    axtop.set_xticklabels(szalabels)
-                    #axtop.set_aspect('equal') 
-                    axtop.set_xlabel(r"Mean incident angle $\Theta$ ($\circ$)",labelpad=10)
-                    axtop.annotate(rf"$\Theta_\mathrm{{min}}$ = {theta_max:.2f}$^\circ$",
-                                    xy=(t_zenith_dt + pd.Timedelta('15T'),axtop.get_ylim()[1] 
-                                        - 0.1*(axtop.get_ylim()[1] - axtop.get_ylim()[0])),
-                                    xycoords='data',fontsize=14)
-                
-                ax.axvline(x=t_zenith_dt,linestyle='--',color='k',linewidth=2)
-                #ax.set_aspect('equal') 
+                    if i == 0:    
+                        szalabels = np.round(df_mean.loc[pd.to_datetime(ax.get_xticks(),unit='D').time,'cos_product_mean'],1)
+                        axtop.set_xticklabels(szalabels)
+                        #axtop.set_aspect('equal')                         
+                        axtop.annotate(rf"$\Theta_\mathrm{{min}}$ = {theta_max:.2f}$^\circ$",
+                                        xy=(t_zenith_dt + pd.Timedelta('15T'),axtop.get_ylim()[1] 
+                                            - 0.1*(axtop.get_ylim()[1] - axtop.get_ylim()[0])),
+                                        xycoords='data',fontsize=14)                        
+                        if k == 0:
+                            ax.set_ylabel(r'$\dfrac{G_\mathrm{si PV}}{G_\mathrm{broadband}}$',position=(-0.25,-0.1),fontsize=20)
+                            axtop.set_xlabel(r"Mean incident angle $\Theta$ ($\circ$)",position =(1.05,1.25),labelpad=10)
+                    elif i ==1:
+                        axtop.set_xticklabels([])
+                        ax.set_xlabel(f'Time (UTC) in {yrname}')
+                    if i == 1 and k == 0:  
+                        ax.legend(loc='upper center',bbox_to_anchor=(1.05, 1.175),framealpha=1.,ncol=3,fontsize=18) #,facecolor='white')            
+                        ax.set_zorder(1)                        
+                        #ax.xaxis.set_label_coords(1.05,-0.1)
+                    ax.axvline(x=t_zenith_dt,linestyle='--',color='k',linewidth=2)
+                    #ax.set_aspect('equal')                                         
+                    
+                    if k == 1:
+                        if i == 0:                                            
+                            cb = fig.colorbar(sc,cax = fig.add_axes([0.92, 0.52, 0.02, 0.359]),pad=0.5)#cax=cax)
+                            cb.set_label(xlabel,labelpad=20)        
+                        elif i == 1:
+                            cb = fig.colorbar(sc,ticks=[0.1,0.2,0.3,0.4],cax = fig.add_axes([0.92, 0.11, 0.02, 0.359]),pad=0.5)#cax=cax)
+                            cb.set_label(xlabel,labelpad=10)        
+                    
+                    
+            fig.subplots_adjust(hspace=0.15,wspace=0.08)
             
-            ax.legend(loc='upper center',bbox_to_anchor=(0.5, 1.25),framealpha=1.) #,facecolor='white')            
-            ax.set_zorder(1)
-            ax.set_xlabel('Time (UTC)')
-            ax.set_ylabel(r'$\dfrac{G_\mathrm{si PV}}{G_\mathrm{broadband}}$',position=(-0.25,1),fontsize=18)
             if title_flag:
-                fig.suptitle(f'Daily variation in spectral mismatch at {key} in {year}')
+                fig.suptitle(f'Daily variation in spectral mismatch at {key}')
             
-            plt.savefig(os.path.join(plotpath,f"mean_spectral_fit_{key}_{substat}_SZA_{int(sza_limit)}_{year}.png")
+            plt.savefig(os.path.join(plotpath,f"mean_spectral_fit_{key}_{substat}_SZA_{int(sza_limit)}.png")
                         ,bbox_inches = 'tight')
             plt.close(fig)
             
@@ -1824,7 +1838,7 @@ if args.station:
         stations = 'all'
 else:
     #Stations for which to perform inversion
-    stations = ["PV_11","PV_12"] #,"PV_01","PV_12"] #"all" #["PV_12"] #,"PV_15","PV_11","PV_19","PV_06","PV_01","PV_04"] #pvrad_config["stations"]
+    stations = ["PV_12","PV_15"] #,"PV_01","PV_12"] #"all" #["PV_12"] #,"PV_15","PV_11","PV_19","PV_06","PV_01","PV_04"] #pvrad_config["stations"]
 
 #Choose measurement campaign
 if args.campaign:
@@ -1907,14 +1921,12 @@ for campaign in pvrad_config["calibration_source"]:
             plot_irradiance_comparison(key,pvsys[key],year,pvrad_config,results_folder)
     
             #Plot cloud fraction        
-            plot_cloud_fraction(key,pvsys[key],year,pvrad_config,results_folder)
-        
-        if plot_flags["spectral"]:
-            #Plot mean spectral fit
-            plot_mean_spectral_fit(key,pvsys[key],yrname,pvrad_config,results_folder,plot_flags["titles"])
+            plot_cloud_fraction(key,pvsys[key],year,pvrad_config,results_folder)                
             
+        #if plot_flags["spectral"]:
+                
             #PLot time grouped fits
-            plot_spectral_fit_time_groups(key,pvsys[key],yrname,pvrad_config,results_folder,plot_flags["titles"])            
+            #plot_spectral_fit_time_groups(key,pvsys[key],yrname,pvrad_config,results_folder,plot_flags["titles"])    
     
     for timeres in pvrad_config["timeres_comparison"]:
         combo_stats[year][f"df_delta_all_{timeres}"] = pd.concat(dfs_deviations[timeres],axis=1)
@@ -1928,6 +1940,10 @@ for key in pvsys:
         #Plot histograms of deviations
         plot_histogram_deviations(key,pvsys[key],pvrad_config,results_folder)
             
+    if plot_flags["spectral"]:
+        #Plot mean spectral fit
+        plot_mean_spectral_fit(key,pvsys[key],pvrad_config,results_folder,plot_flags["titles"])
+                
 # test_stations = [("PV_12","p_ac_1sec","egrid"),("PV_15","p_ac_1sec","egrid"), #,
 #                  ("PV_11","p_ac_1sec","egrid"),("PV_19","p_ac_1sec","egrid")] #
 
