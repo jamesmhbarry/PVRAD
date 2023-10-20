@@ -74,7 +74,7 @@ def load_inversion_results(rt_config,pv_config,station_list,home):
 
     model = pv_config["inversion"]["power_model"]
     eff_model = pv_config["eff_model"]
-    T_model = pv_config["T_model"]
+    T_model = pv_config["T_model"]["model"]
     sza_label = "SZA_" + str(int(pv_config["sza_max"]["disort"]))
     
     folder_label = os.path.join(mainpath,atm_geom_folder,wvl_folder_label,
@@ -94,11 +94,12 @@ def load_inversion_results(rt_config,pv_config,station_list,home):
     if type(station_list) != list:
         station_list = [station_list]
         if station_list[0] == "all":
-            station_list = pv_config["pv_stations"]
+            station_list = list(pv_config["pv_stations"].keys())
     
     for station in station_list:                
         #Read in binary file that was saved from pvcal_radsim_disort
         filename_stat = filename + station + '.data'
+        #print(station)
         try:
             with open(os.path.join(folder_label,filename_stat), 'rb') as filehandle:  
                 # read the data as binary data stream
@@ -356,7 +357,7 @@ parser.add_argument("-s","--station",nargs='+',help="station for which to perfor
 parser.add_argument("-c","--campaign",nargs='+',help="measurement campaign for which to perform simulation")
 args = parser.parse_args()
     
-config_filename = "config_PVCAL_2019_solarwatt.yaml" #"MetPVNet_messkampagne.yaml" #os.path.abspath(args.configfile)
+config_filename = "config_PVCAL_MetPVNet_messkampagne.yaml" #os.path.abspath(args.configfile)
  
 config = load_yaml_configfile(config_filename)
 
@@ -369,7 +370,7 @@ pv_config = load_yaml_configfile(config["pv_configfile"])
 #Load radiative transfer configuration
 rt_config = load_yaml_configfile(config["rt_configfile"])
 
-homepath = os.path.expanduser('~') #"/media/luke" #
+homepath = os.path.expanduser('~') # #"/media/luke" #
 
 if args.station:
     stations = args.station
@@ -377,7 +378,7 @@ if args.station:
         stations = 'all'
 else:
     #Stations for which to perform inversion
-    stations = pv_config["stations"]
+    stations = "all" #["MS_02","PV_01"] #"all" #pv_config["pv_stations"]
   
 theta_res = str(rt_config["disort_rad_res"]["theta"]).replace('.','-')
 phi_res = str(rt_config["disort_rad_res"]["phi"]).replace('.','-')
@@ -385,11 +386,11 @@ res_string_label = '_' + theta_res + '_' + phi_res + '_'
 
 
 #%%Load ground truth angles
-# file_angles = "/mnt/bigdata/share/00_Projects/1_MetPVNet/Messkampagne/01_Dokumentation/PV_Calibration/Old_Results/20190626_Anlagen_Winkel_Vergleich_JB.xlsx"
+file_angles = "/mnt/bigdata/share/00_Projects/1_MetPVNet/Messkampagne/01_Dokumentation/PV_Calibration/Old_Results/20190626_Anlagen_Winkel_Vergleich_JB.xlsx"
 # #file_angles = os.path.join(homepath,"MetPVNet/Data/Messkampagne/20190626_Anlagen_Winkel_Vergleich_JB.xlsx")
 
-# real_angles = pd.read_excel(file_angles,sheet_name="Finale Winkel",index_col=0,usecols=[0,1,2])        
-#real_angles.rename(columns={real_angles.columns[0]:'Theta_act',real_angles.columns[1]:'Phi_act'},inplace=True)
+real_angles = pd.read_excel(file_angles,sheet_name="Finale Winkel",index_col=0,usecols=[0,1,2])        
+real_angles.rename(columns={real_angles.columns[0]:'Theta_act',real_angles.columns[1]:'Phi_act'},inplace=True)
 
 print('Analysis of inversion results for %s' % pv_config["stations"])
 print('Loading results from Bayesian inversion')
@@ -401,18 +402,18 @@ print('Model: %s, efficiency model: %s, temperature model: %s' %(pv_config["inve
 pvsys, dummy, dummy, results_folder = load_inversion_results(rt_config,pv_config,stations,homepath)
 
 #%%Plots for analysis
-for key in pvsys:
+#for key in pvsys:
     #Plot the normalised performance ratio
-    print('Plotting normalised performance ratio')
-    plot_pnorm_irrad(key,pvsys[key]['substations'],results_folder)
+    # print('Plotting normalised performance ratio')
+    # plot_pnorm_irrad(key,pvsys[key]['substations'],results_folder)
     
-    #Plot averaging kernel matrix
-    print('Plotting diagonal elements of averaging kernel matrix')
-    plot_ave_kernel(key,pvsys[key]['substations'],pv_config,results_folder)
+    # #Plot averaging kernel matrix
+    # print('Plotting diagonal elements of averaging kernel matrix')
+    # plot_ave_kernel(key,pvsys[key]['substations'],pv_config,results_folder)
       
-    #Plot temperature comparison
-    print('Plotting measured vs. modelled temperature')
-    plot_temp_eff(key,pvsys[key],pv_config,results_folder)
+    # #Plot temperature comparison
+    # print('Plotting measured vs. modelled temperature')
+    # plot_temp_eff(key,pvsys[key],pv_config,results_folder)
     
 #%%Generate results table for scatter plots
 opt_results_sza_80 = pd.DataFrame() #theta_results = {}
@@ -573,22 +574,44 @@ plt.savefig(os.path.join(results_folder,'Bias_Plots/calibration_theta_sza_80.png
 #%%Grid scatter plots
 fig, axs = plt.subplots(1, 2, figsize=(14,7))            
 axvec = axs.flatten()
-
+print(opt_results_sza_80)
 axvec[0].scatter(opt_results_sza_80['theta_act'].filter(regex='auew'), 
             opt_results_sza_80['theta_opt'].filter(regex='auew'),color='r',marker='o',s=80)
 axvec[0].scatter(opt_results_sza_80['theta_act'].filter(regex='egrid'), 
             opt_results_sza_80['theta_opt'].filter(regex='egrid'),color='b',marker='o',s=80)
-axvec[0].scatter(opt_results_sza_80['theta_act'].filter(regex='WR'), 
-            opt_results_sza_80['theta_opt'].filter(regex='WR'),color='g',marker='o',s=80)
+# axvec[0].scatter(opt_results_sza_80['theta_act'].filter(regex='WR'), 
+#             opt_results_sza_80['theta_opt'].filter(regex='WR'),color='g',marker='o',s=80)
 axvec[0].set_xlabel(r'$\theta_{\rm actual}\ (\circ)$')
 axvec[0].set_ylabel(r'$\theta_{\rm opt}\ (\circ)$')
 axvec[0].set_xlim([0,70])
 axvec[0].set_ylim([0,70])
 axvec[0].set_aspect('equal', 'box')
-axvec[0].legend(['AUEW 15 min', 'egrid 1 Hz', 'Inverter 5 min'])
+axvec[0].legend(['AUEW 15 min', 'egrid 1 Hz']) #, 'Inverter 5 min'])
 
 axvec[0].plot(np.linspace(axvec[0].get_xlim()[0],axvec[0].get_xlim()[1],50),
         np.linspace(axvec[0].get_xlim()[0],axvec[0].get_xlim()[1],50),':k')
+
+xlims_inset = (18,30)
+ylims_inset = (18,30)
+axins = axvec[0].inset_axes(
+    [0.58, 0.05, 0.35, 0.35],
+    xlim=xlims_inset, ylim=ylims_inset, #xticklabels=[], yticklabels=[],
+    xticks=[20,25,30],yticks=[20,25,30])
+axins.tick_params(axis='both',labelsize=12)
+axins.plot(np.linspace(axins.get_xlim()[0],axins.get_xlim()[1],50),
+        np.linspace(axins.get_xlim()[0],axins.get_xlim()[1],50),':k')
+
+#axins.grid(False)
+
+axins.scatter(opt_results_sza_80['theta_act'].filter(regex='auew'), 
+            opt_results_sza_80['theta_opt'].filter(regex='auew'),color='r',
+            marker='o',s=80)
+axins.scatter(opt_results_sza_80['theta_act'].filter(regex='egrid'), 
+            opt_results_sza_80['theta_opt'].filter(regex='egrid'),color='b',
+            marker='o',s=80)
+
+axvec[0].indicate_inset_zoom(axins, edgecolor="black")
+
 
 for txt in opt_results_sza_80.index:
     name = txt.split(' ')
@@ -597,33 +620,76 @@ for txt in opt_results_sza_80.index:
     if number[0] == 'PV':
         label = number[1]
     else:
-        label = name[0]
+        label = name[0].replace('_','')
     if name[0] in ['PV_11'] and ("auew" in name[1] or "egrid" in name[1]):
         label = number[1] + ',' + name[1][-1] 
-    if name[0] in ['MS_02'] and ("egrid" in name[1] or "WR" in name[1]):
-        if name[1][-1] == "2":
-            label = name[0]# + ',' + name[1][-1]
+    if name[0] == 'MS_02':# and ("egrid" in name[1]):
+        if name[1] == "egrid_1" or "egrid_2" in name[1] or "auew" in name[1]: # and "egrid" not in name[1]:
+            label = name[0].replace('_','')# + ',' + name[1][-1]
         else:
             label = ''
         
-    axvec[0].annotate(label, (opt_results_sza_80.loc[txt,'theta_act'], opt_results_sza_80.loc[txt,'theta_opt']) 
-                ,fontsize=12)
+    if (opt_results_sza_80.loc[txt,'theta_act'] < xlims_inset[0] or  \
+        opt_results_sza_80.loc[txt,'theta_act'] > xlims_inset[1]) or \
+        (opt_results_sza_80.loc[txt,'theta_opt'] < ylims_inset[0] or \
+        opt_results_sza_80.loc[txt,'theta_opt'] > ylims_inset[1]):
+        
+        #if label != "09":
+        delx = 0.5
+        dely = -0.5
+        axvec[0].annotate(label, (opt_results_sza_80.loc[txt,'theta_act']+delx,
+                                      opt_results_sza_80.loc[txt,'theta_opt']+dely) 
+                  ,fontsize=11)
+    #     else:
+    #         axvec[0].annotate(label, (opt_results_sza_80.loc[txt,'theta_act'], 
+    #                                   opt_results_sza_80.loc[txt,'theta_opt']-2) 
+    #               ,fontsize=11)
+    else:
+        delx = 0.1
+        dely=-0.1
+        if label == "06":
+            dely = -0.5
+            delx = -1.5
+        axins.annotate(label, (opt_results_sza_80.loc[txt,'theta_act']+delx, 
+                                opt_results_sza_80.loc[txt,'theta_opt']+dely) 
+                   ,fontsize=11,xycoords='data')
 
 axvec[1].scatter(opt_results_sza_80['phi_act'].filter(regex='auew'), 
            opt_results_sza_80['phi_opt'].filter(regex='auew'),color='r',marker='o',s=80)
 axvec[1].scatter(opt_results_sza_80['phi_act'].filter(regex='egrid'), 
            opt_results_sza_80['phi_opt'].filter(regex='egrid'),color='b',marker='o',s=80)
-axvec[1].scatter(opt_results_sza_80['phi_act'].filter(regex='WR'), 
-           opt_results_sza_80['phi_opt'].filter(regex='WR'),color='g',marker='o',s=80)
+# axvec[1].scatter(opt_results_sza_80['phi_act'].filter(regex='WR'), 
+#            opt_results_sza_80['phi_opt'].filter(regex='WR'),color='g',marker='o',s=80)
 axvec[1].set_xlabel(r'$\phi_{\rm actual}\ (\circ)$')
 axvec[1].set_ylabel(r'$\phi_{\rm opt}\ (\circ)$')
 axvec[1].set_xlim([130,235])
 axvec[1].set_ylim([130,235])
 axvec[1].set_aspect('equal', 'box')
-axvec[1].legend(['AUEW 15 min', 'egrid 1 Hz', 'Inverter 5 min'])
+axvec[1].legend(['AUEW 15 min', 'egrid 1 Hz'])#, 'Inverter 5 min'])
 
 axvec[1].plot(np.linspace(axvec[1].get_xlim()[0],axvec[1].get_xlim()[1],50),
         np.linspace(axvec[1].get_xlim()[0],axvec[1].get_xlim()[1],50),':k')
+
+xlims_inset2 = (176,192)
+ylims_inset2 = (176,192)
+axins2 = axvec[1].inset_axes(
+    [0.58, 0.05, 0.35, 0.35],
+    xlim=xlims_inset2, ylim=ylims_inset2, #xticklabels=[], yticklabels=[],
+    xticks=[180,185,190],yticks=[180,185,190])
+axins2.tick_params(axis='both',labelsize=12)
+axins2.plot(np.linspace(axins2.get_xlim()[0],axins2.get_xlim()[1],50),
+        np.linspace(axins2.get_xlim()[0],axins2.get_xlim()[1],50),':k')
+
+#axins.grid(False)
+
+axins2.scatter(opt_results_sza_80['phi_act'].filter(regex='auew'), 
+            opt_results_sza_80['phi_opt'].filter(regex='auew'),color='r',
+            marker='o',s=80)
+axins2.scatter(opt_results_sza_80['phi_act'].filter(regex='egrid'), 
+            opt_results_sza_80['phi_opt'].filter(regex='egrid'),color='b',
+            marker='o',s=80)
+
+axvec[1].indicate_inset_zoom(axins2, edgecolor="black")
 
 for txt in opt_results_sza_80.index:
     name = txt.split(' ')
@@ -632,17 +698,45 @@ for txt in opt_results_sza_80.index:
     if number[0] == 'PV':
         label = number[1]
     else:
-        label = name[0]
+        label = name[0].replace('_','')
     if name[0] in ['PV_11'] and ("auew" in name[1] or "egrid" in name[1]):
         label = number[1] + ',' + name[1][-1] 
-    if name[0] in ['MS_02'] and ("egrid" in name[1] or "WR" in name[1]):
-        if name[1][-1] == "2":
-            label = name[0]# + ',' + name[1][-1]
+        if "egrid_1" in name[1]:
+            label = ""
+    if name[0] == 'MS_02':# and ("egrid" in name[1]):
+        if name[1] == "egrid_2" or "auew" in name[1]: # and "egrid" not in name[1]:
+            label = name[0].replace('_','')# + ',' + name[1][-1]
         else:
             label = ''
+    # if name[0] in ['MS_02'] and ("egrid" in name[1] or "WR" in name[1]):
+    #     if name[1][-1] == "2":
+    #         label = name[0].replace('_','')# + ',' + name[1][-1]
+    #     # else:
+        #     label = ''
         
-    axvec[1].annotate(label, (opt_results_sza_80.loc[txt,'phi_act'], opt_results_sza_80.loc[txt,'phi_opt']) 
-                ,fontsize=12)
+    
+    if (opt_results_sza_80.loc[txt,'phi_act'] < xlims_inset2[0] or  \
+        opt_results_sza_80.loc[txt,'phi_act'] > xlims_inset2[1]) or \
+        (opt_results_sza_80.loc[txt,'phi_opt'] < ylims_inset2[0] or \
+        opt_results_sza_80.loc[txt,'phi_opt'] > ylims_inset2[1]):
+        
+        delx = 0.5
+        dely = -0.5
+        #if label == "08":
+            
+        axvec[1].annotate(label, (opt_results_sza_80.loc[txt,'phi_act']+delx,
+                                  opt_results_sza_80.loc[txt,'phi_opt']+dely) 
+                 ,fontsize=11)
+    else:
+        delx = 0.1
+        dely = -0.1
+        if label == "06":
+            dely = -1.
+            delx=-1.5
+        axins2.annotate(label, (opt_results_sza_80.loc[txt,'phi_act']+delx, 
+                                 opt_results_sza_80.loc[txt,'phi_opt']+dely) 
+                   ,fontsize=12,xycoords='data')
+    
 
 fig.subplots_adjust(wspace=-0.15)
 
@@ -652,7 +746,7 @@ fig.subplots_adjust(wspace=-0.15)
 fig.tight_layout()
 plt.savefig(os.path.join(results_folder,'Bias_Plots/calibration_theta_phi_grid_sza_80.png'))
 
-#%%
+#%%Deviation plots
 fig3, ax3 = plt.subplots(figsize=(9,9))
 plt.title(r'Deviation in azimuth and elevation for SZA < 80$^\circ$')    
 ax3.scatter(opt_results_sza_80['dphi'].filter(regex='auew'),
@@ -690,84 +784,84 @@ plt.savefig(os.path.join(results_folder,'Bias_Plots/deviation_theta_phi_sza_80.p
 #ax = fig.add_subplot(111, projection = '3d')
 #ax.scatter(opt_results_sza_80.u0_opt,opt_results_sza_80.u1_opt,opt_results_sza_80.u2_opt)
 
-#%%
-plt.close('all')
-fig, ax = plt.subplots(figsize=(9,9))
-ax.scatter(opt_results_sza_80.u0_opt.filter(regex='auew'),opt_results_sza_80.u2_opt.filter(regex='auew'),
-           color='r',marker='o',s=80)
-ax.scatter(opt_results_sza_80.u0_opt.filter(regex='egrid'),opt_results_sza_80.u2_opt.filter(regex='egrid'),
-           color='b',marker='o',s=80)
-ax.set_xlabel(r'$u_0$')
-ax.set_ylabel(r'$u_2\ (^{\circ}C\,m^{-1}\,s)$')
-ax.set_title('Ambient temperature vs. wind speed coefficient')
-for txt in opt_results_sza_80.index:
-    name = txt.split(' ')
-    #if name[0] in ['PV_21','PV_06','PV_11']:
-    number = name[0].split('_')
-    if number[0] == 'PV':
-        label = number[1]
-    else:
-        label = name[0]
-    if name[0] in ['PV_11'] and "auew" in name[1]:
-        label = number[1] + ',' + name[1][-1] 
-    ax.annotate(label, (opt_results_sza_80.loc[txt,'u0_opt'], opt_results_sza_80.loc[txt,'u2_opt']) 
-                ,fontsize=12)
-fig.tight_layout()
-plt.savefig(os.path.join(results_folder,'Bias_Plots/u0_u2_opt.png'))
+#%%Temperature model coefficients: ambient temp, wind speed
+# plt.close('all')
+# fig, ax = plt.subplots(figsize=(9,9))
+# ax.scatter(opt_results_sza_80.u0_opt.filter(regex='auew'),opt_results_sza_80.u2_opt.filter(regex='auew'),
+#            color='r',marker='o',s=80)
+# ax.scatter(opt_results_sza_80.u0_opt.filter(regex='egrid'),opt_results_sza_80.u2_opt.filter(regex='egrid'),
+#            color='b',marker='o',s=80)
+# ax.set_xlabel(r'$u_0$')
+# ax.set_ylabel(r'$u_2\ (^{\circ}C\,m^{-1}\,s)$')
+# ax.set_title('Ambient temperature vs. wind speed coefficient')
+# for txt in opt_results_sza_80.index:
+#     name = txt.split(' ')
+#     #if name[0] in ['PV_21','PV_06','PV_11']:
+#     number = name[0].split('_')
+#     if number[0] == 'PV':
+#         label = number[1]
+#     else:
+#         label = name[0]
+#     if name[0] in ['PV_11'] and "auew" in name[1]:
+#         label = number[1] + ',' + name[1][-1] 
+#     ax.annotate(label, (opt_results_sza_80.loc[txt,'u0_opt'], opt_results_sza_80.loc[txt,'u2_opt']) 
+#                 ,fontsize=12)
+# fig.tight_layout()
+# plt.savefig(os.path.join(results_folder,'Bias_Plots/u0_u2_opt.png'))
 
-#%%
-plt.close('all')
-fig, ax = plt.subplots(figsize=(9,9))
-ax.scatter(opt_results_sza_80.u0_opt.filter(regex='auew'),opt_results_sza_80.u1_opt.filter(regex='auew'),
-           color='r',marker='o',s=80)
-ax.scatter(opt_results_sza_80.u0_opt.filter(regex='egrid'),opt_results_sza_80.u1_opt.filter(regex='egrid'),
-           color='b',marker='o',s=80)
-ax.set_xlabel(r'$u_0$')
-ax.set_ylabel(r'$u_1\ (^{\circ}C\, m^2\, W^{-1})$')
-ax.set_title('Ambient temperature vs. irradiance coefficient')
-for txt in opt_results_sza_80.index:
-    name = txt.split(' ')
-    #if name[0] in ['PV_21','PV_06','PV_11']:
-    number = name[0].split('_')
-    if number[0] == 'PV':
-        label = number[1]
-    else:
-        label = name[0]
-    if name[0] in ['PV_11'] and "auew" in name[1]:
-        label = number[1] + ',' + name[1][-1] 
-    ax.annotate(label, (opt_results_sza_80.loc[txt,'u0_opt'], opt_results_sza_80.loc[txt,'u1_opt']) 
-                ,fontsize=12)
-fig.tight_layout()
-plt.savefig(os.path.join(results_folder,'Bias_Plots/u0_u1_opt.png'))
+#%%Ambient temperature, irradiance
+# plt.close('all')
+# fig, ax = plt.subplots(figsize=(9,9))
+# ax.scatter(opt_results_sza_80.u0_opt.filter(regex='auew'),opt_results_sza_80.u1_opt.filter(regex='auew'),
+#            color='r',marker='o',s=80)
+# ax.scatter(opt_results_sza_80.u0_opt.filter(regex='egrid'),opt_results_sza_80.u1_opt.filter(regex='egrid'),
+#            color='b',marker='o',s=80)
+# ax.set_xlabel(r'$u_0$')
+# ax.set_ylabel(r'$u_1\ (^{\circ}C\, m^2\, W^{-1})$')
+# ax.set_title('Ambient temperature vs. irradiance coefficient')
+# for txt in opt_results_sza_80.index:
+#     name = txt.split(' ')
+#     #if name[0] in ['PV_21','PV_06','PV_11']:
+#     number = name[0].split('_')
+#     if number[0] == 'PV':
+#         label = number[1]
+#     else:
+#         label = name[0]
+#     if name[0] in ['PV_11'] and "auew" in name[1]:
+#         label = number[1] + ',' + name[1][-1] 
+#     ax.annotate(label, (opt_results_sza_80.loc[txt,'u0_opt'], opt_results_sza_80.loc[txt,'u1_opt']) 
+#                 ,fontsize=12)
+# fig.tight_layout()
+# plt.savefig(os.path.join(results_folder,'Bias_Plots/u0_u1_opt.png'))
 
-#%%
+#%%Deviation in tilt vs. s
 
-plt.close('all')
-fig = plt.figure(figsize=(9,9)) #, gridspec_kw = {'height_ratios': [3, 1]})
-gs = GridSpec(2, 1, height_ratios=[3, 1])
-ax1 = fig.add_subplot(gs[0])
-ax1.scatter(opt_results_sza_80.s_opt.filter(regex='auew'),opt_results_sza_80.dtheta.filter(regex='auew'),
-           color='r',marker='o',s=80)
-ax1.scatter(opt_results_sza_80.s_opt.filter(regex='egrid'),opt_results_sza_80.dtheta.filter(regex='egrid'),
-           color='b',marker='o',s=80)
-#ax.set_xlabel(r'$P_{\rm max}$ (kW)')
-#ax1.set_xlabel(r'$s_{\rm opt}$ (m$^2$)')
-ax1.set_ylabel(r'$\theta_{\rm opt} - \theta_{\rm actual}\ (\circ)$')
-ax1.set_title('Deviation in tilt angle vs. area scaling factor')
-ax1.set_ylim([-25,25])
-ax1.set_xlim([0,250])
-for txt in opt_results_sza_80.index:
-    name = txt.split(' ')
-    #if name[0] in ['PV_21','PV_06','PV_11']:
-    number = name[0].split('_')
-    if number[0] == 'PV':
-        label = number[1]
-    else:
-        label = name[0]
-    if name[0] in ['PV_11'] and "auew" in name[1]:
-        label = number[1] + ',' + name[1][-1] 
-    ax1.annotate(label, (opt_results_sza_80.loc[txt,'s_opt'], opt_results_sza_80.loc[txt,'dtheta']) 
-                ,fontsize=12)
+# plt.close('all')
+# fig = plt.figure(figsize=(9,9)) #, gridspec_kw = {'height_ratios': [3, 1]})
+# gs = GridSpec(2, 1, height_ratios=[3, 1])
+# ax1 = fig.add_subplot(gs[0])
+# ax1.scatter(opt_results_sza_80.s_opt.filter(regex='auew'),opt_results_sza_80.dtheta.filter(regex='auew'),
+#            color='r',marker='o',s=80)
+# ax1.scatter(opt_results_sza_80.s_opt.filter(regex='egrid'),opt_results_sza_80.dtheta.filter(regex='egrid'),
+#            color='b',marker='o',s=80)
+# #ax.set_xlabel(r'$P_{\rm max}$ (kW)')
+# #ax1.set_xlabel(r'$s_{\rm opt}$ (m$^2$)')
+# ax1.set_ylabel(r'$\theta_{\rm opt} - \theta_{\rm actual}\ (\circ)$')
+# ax1.set_title('Deviation in tilt angle vs. area scaling factor')
+# ax1.set_ylim([-25,25])
+# ax1.set_xlim([0,250])
+# for txt in opt_results_sza_80.index:
+#     name = txt.split(' ')
+#     #if name[0] in ['PV_21','PV_06','PV_11']:
+#     number = name[0].split('_')
+#     if number[0] == 'PV':
+#         label = number[1]
+#     else:
+#         label = name[0]
+#     if name[0] in ['PV_11'] and "auew" in name[1]:
+#         label = number[1] + ',' + name[1][-1] 
+#     ax1.annotate(label, (opt_results_sza_80.loc[txt,'s_opt'], opt_results_sza_80.loc[txt,'dtheta']) 
+#                 ,fontsize=12)
 #fig.tight_layout()
 #plt.savefig(os.path.join(results_folder,'Bias_Plots/dtheta_sopt.png'))
 
@@ -800,7 +894,7 @@ for txt in opt_results_sza_80.index:
 #fig.tight_layout()
 #plt.savefig(os.path.join(results_folder,'Bias_Plots/dtheta_eff_temp.png'))
 
-#%%
+#%%Extra plots
 #pv_config["sza_max"] = 75
 #pvsys, sys_info = load_inversion_results(config["description"],rt_config,pv_config,data_config,homepath)
 #
