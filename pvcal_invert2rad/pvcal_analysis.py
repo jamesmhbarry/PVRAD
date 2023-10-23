@@ -586,7 +586,7 @@ axvec[0].set_ylabel(r'$\theta_{\rm opt}\ (\circ)$')
 axvec[0].set_xlim([0,70])
 axvec[0].set_ylim([0,70])
 axvec[0].set_aspect('equal', 'box')
-axvec[0].legend(['AUEW 15 min', 'egrid 1 Hz']) #, 'Inverter 5 min'])
+axvec[0].legend(['AÜW 15 min', 'egrid 1 Hz']) #, 'Inverter 5 min'])
 
 axvec[0].plot(np.linspace(axvec[0].get_xlim()[0],axvec[0].get_xlim()[1],50),
         np.linspace(axvec[0].get_xlim()[0],axvec[0].get_xlim()[1],50),':k')
@@ -665,7 +665,7 @@ axvec[1].set_ylabel(r'$\phi_{\rm opt}\ (\circ)$')
 axvec[1].set_xlim([130,235])
 axvec[1].set_ylim([130,235])
 axvec[1].set_aspect('equal', 'box')
-axvec[1].legend(['AUEW 15 min', 'egrid 1 Hz'])#, 'Inverter 5 min'])
+axvec[1].legend(['AÜW 15 min', 'egrid 1 Hz'])#, 'Inverter 5 min'])
 
 axvec[1].plot(np.linspace(axvec[1].get_xlim()[0],axvec[1].get_xlim()[1],50),
         np.linspace(axvec[1].get_xlim()[0],axvec[1].get_xlim()[1],50),':k')
